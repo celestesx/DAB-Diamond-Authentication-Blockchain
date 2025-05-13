@@ -1,2 +1,2 @@
-# ACTVS
-Academic Credential &amp; Transcript Verification Systen
+# DAB
+Diamond Authentication Blockchain on Ethereum
