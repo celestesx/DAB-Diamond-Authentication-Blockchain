@@ -61,6 +61,41 @@ contract EntityContract {
         emit EntityRegistered(msg.sender, _name, normalisedRole, _licenseNumber);
     }
 
+    //check if a wallet address has a role
+    function hasRole(address _address, string memory _role) private view returns (bool) {
+        if (!entities[_address].isRegistered) {
+            return false;
+        }
+        
+        string memory normalizedRole = normaliseRole(_role);
+        return keccak256(abi.encodePacked(entities[_address].role)) == 
+               keccak256(abi.encodePacked(normalizedRole));
+    }
+
+    //get entities by role
+    function getEntitiesByRole(string memory _role) public view returns (address[] memory) {
+        string memory normalisedRole = normaliseRole(_role);
+        return entitiesByRole[normalisedRole];
+    } 
+
+    //get entity info
+    function getEntityInfo(address _entityAddress) public view returns (
+        string memory name,
+        string memory location,
+        bool isRegistered,
+        string memory licenseNumber,
+        string memory role
+    ) {
+        Entity storage entity = entities[_entityAddress];
+        return (
+            entity.name,
+            entity.location,
+            entity.isRegistered,
+            entity.licenseNumber,
+            entity.role
+        );
+    } 
+
     function normaliseRole(string memory _role) private pure returns (string memory) {
         bytes32 roleHash = keccak256(abi.encodePacked(_toLowerCase(_role)));
         
