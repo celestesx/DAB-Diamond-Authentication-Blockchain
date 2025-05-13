@@ -39,6 +39,9 @@ contract EntityContract {
         );
 
         require(!entities[msg.sender].isRegistered, "Entity already registered");
+
+        bytes memory licenseBytes = bytes(_licenseNumber);
+        require(licenseBytes.length > 0, "License number cannot be empty");
     }
 
     function normaliseRole(string memory _role) private pure returns (string memory) {
