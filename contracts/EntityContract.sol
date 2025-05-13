@@ -42,6 +42,19 @@ contract EntityContract {
 
         bytes memory licenseBytes = bytes(_licenseNumber);
         require(licenseBytes.length > 0, "License number cannot be empty");
+
+        bytes1 expectedPrefix = getLicensePrefixForRole(normalisedRole);
+        require(licenseBytes[0] == expectedPrefix, 
+            string(abi.encodePacked("License must start with '", expectedPrefix, "' for ", normalisedRole)));
+        
+        //Create entity
+        entities[msg.sender] = Entity({
+            name: _name,
+            location: _location,
+            isRegistered: true,
+            licenseNumber: _licenseNumber,
+            role: normalisedRole
+        });
     }
 
     function normaliseRole(string memory _role) private pure returns (string memory) {
@@ -60,7 +73,7 @@ contract EntityContract {
         }
     }
 
-        function _toLowerCase(string memory _str) private pure returns (string memory) {
+    function _toLowerCase(string memory _str) private pure returns (string memory) {
         bytes memory bStr = bytes(_str);
         bytes memory bLower = new bytes(bStr.length);
         
@@ -75,11 +88,26 @@ contract EntityContract {
         return string(bLower);
     }
 
-        function isValidRole(string memory _role) private pure returns (bool) {
+    function isValidRole(string memory _role) private pure returns (bool) {
         return keccak256(abi.encodePacked(_role)) == keccak256(abi.encodePacked(ROLE_MINER)) ||
                keccak256(abi.encodePacked(_role)) == keccak256(abi.encodePacked(ROLE_MANUFACTURER)) ||
                keccak256(abi.encodePacked(_role)) == keccak256(abi.encodePacked(ROLE_CERTIFIER)) ||
                keccak256(abi.encodePacked(_role)) == keccak256(abi.encodePacked(ROLE_RETAILER));
     }
 
+    function getLicensePrefixForRole(string memory _role) private pure returns (bytes1) {
+        bytes32 roleHash = keccak256(abi.encodePacked(_role));
+        
+        if (roleHash == keccak256(abi.encodePacked(ROLE_MINER))) {
+            return 'a';
+        } else if (roleHash == keccak256(abi.encodePacked(ROLE_MANUFACTURER))) {
+            return 'b';
+        } else if (roleHash == keccak256(abi.encodePacked(ROLE_CERTIFIER))) {
+            return 'c';
+        } else if (roleHash == keccak256(abi.encodePacked(ROLE_RETAILER))) {
+            return 'd';
+        } else {
+            revert("Invalid role");
+        }
+    }
 }
