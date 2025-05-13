@@ -37,6 +37,8 @@ contract EntityContract {
             isValidRole(normalisedRole),
             "Invalid role. Must be Miner, Manufacturer, Certifier, or Retailer"
         );
+
+        require(!entities[msg.sender].isRegistered, "Entity already registered");
     }
 
     function normaliseRole(string memory _role) private pure returns (string memory) {
