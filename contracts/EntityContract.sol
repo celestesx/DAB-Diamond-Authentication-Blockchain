@@ -55,6 +55,10 @@ contract EntityContract {
             licenseNumber: _licenseNumber,
             role: normalisedRole
         });
+
+        entitiesByRole[normalisedRole].push(msg.sender);
+
+        emit EntityRegistered(msg.sender, _name, normalisedRole, _licenseNumber);
     }
 
     function normaliseRole(string memory _role) private pure returns (string memory) {
