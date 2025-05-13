@@ -1,0 +1,197 @@
+{
+	"compiler": {
+		"version": "0.8.26+commit.8a97fa7a"
+	},
+	"language": "Solidity",
+	"output": {
+		"abi": [
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": true,
+						"internalType": "address",
+						"name": "entityAddress",
+						"type": "address"
+					},
+					{
+						"indexed": false,
+						"internalType": "string",
+						"name": "name",
+						"type": "string"
+					},
+					{
+						"indexed": false,
+						"internalType": "string",
+						"name": "role",
+						"type": "string"
+					},
+					{
+						"indexed": false,
+						"internalType": "string",
+						"name": "licenseNumber",
+						"type": "string"
+					}
+				],
+				"name": "EntityRegistered",
+				"type": "event"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "string",
+						"name": "_role",
+						"type": "string"
+					}
+				],
+				"name": "getEntitiesByRole",
+				"outputs": [
+					{
+						"internalType": "address[]",
+						"name": "",
+						"type": "address[]"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "_entityAddress",
+						"type": "address"
+					}
+				],
+				"name": "getEntityInfo",
+				"outputs": [
+					{
+						"internalType": "string",
+						"name": "name",
+						"type": "string"
+					},
+					{
+						"internalType": "string",
+						"name": "location",
+						"type": "string"
+					},
+					{
+						"internalType": "bool",
+						"name": "isRegistered",
+						"type": "bool"
+					},
+					{
+						"internalType": "string",
+						"name": "licenseNumber",
+						"type": "string"
+					},
+					{
+						"internalType": "string",
+						"name": "role",
+						"type": "string"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "string",
+						"name": "_name",
+						"type": "string"
+					},
+					{
+						"internalType": "string",
+						"name": "_location",
+						"type": "string"
+					},
+					{
+						"internalType": "string",
+						"name": "_role",
+						"type": "string"
+					},
+					{
+						"internalType": "string",
+						"name": "_licenseNumber",
+						"type": "string"
+					}
+				],
+				"name": "registerEntity",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			}
+		],
+		"devdoc": {
+			"details": "Simplified version that manages registration of stakeholders in diamond supply chain",
+			"kind": "dev",
+			"methods": {
+				"getEntitiesByRole(string)": {
+					"details": "Get all entities with a specific role",
+					"params": {
+						"_role": "Role to filter by (e.g., \"Miner\", \"miner\", \"MANUFACTURER\")"
+					},
+					"returns": {
+						"_0": "Array of entity addresses with the specified role"
+					}
+				},
+				"getEntityInfo(address)": {
+					"details": "Get entity information",
+					"params": {
+						"_entityAddress": "Address of the entity"
+					},
+					"returns": {
+						"isRegistered": "Whether the entity is registered",
+						"licenseNumber": "License number of the entity",
+						"location": "Location of the entity",
+						"name": "Name of the entity",
+						"role": "Role of the entity as string"
+					}
+				},
+				"registerEntity(string,string,string,string)": {
+					"details": "Register a new entity in the system",
+					"params": {
+						"_licenseNumber": "License number for the entity",
+						"_location": "Location of the entity",
+						"_name": "Name of the entity",
+						"_role": "Role of the entity (e.g. \"Miner\", \"MANUFACTURER\", \"certifier\", \"retailer\")"
+					}
+				}
+			},
+			"title": "EntityContract",
+			"version": 1
+		},
+		"userdoc": {
+			"kind": "user",
+			"methods": {},
+			"version": 1
+		}
+	},
+	"settings": {
+		"compilationTarget": {
+			"contracts/EntityContract2.sol": "EntityContract"
+		},
+		"evmVersion": "cancun",
+		"libraries": {},
+		"metadata": {
+			"bytecodeHash": "ipfs"
+		},
+		"optimizer": {
+			"enabled": false,
+			"runs": 200
+		},
+		"remappings": []
+	},
+	"sources": {
+		"contracts/EntityContract2.sol": {
+			"keccak256": "0x935b352d398011dd1419a107e2a12c3ea77478b0bfc3a9a9e44426deabcaffac",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://e8e675dc4103b2e6fde4c14477580fa801fbd5e5c022f26b3c35ac9844acf8ee",
+				"dweb:/ipfs/QmP6JY8xYiTyGEDSKdzxo258mEVu6TGuwcXM3r8inUeiXE"
+			]
+		}
+	},
+	"version": 1
+}
