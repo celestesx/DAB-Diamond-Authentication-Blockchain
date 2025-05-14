@@ -7,6 +7,17 @@ contract EntityContract {
     string constant ROLE_CERTIFIER = "Certifier";
     string constant ROLE_RETAILER = "Retailer";
 
+    //hardcode blacklisted locations for proof of concept
+    //info from: https://verite.org/project/diamonds-3/
+    string[] private blacklistedLocations = [
+        "angola",
+        "central african republic",
+        "congo",
+        "guinea",
+        "liberia",
+        "sierra leone"
+    ];
+
     struct Entity {
         string name;
         string location;
@@ -33,10 +44,16 @@ contract EntityContract {
     ) public {
         string memory normalisedRole = normaliseRole(_role);
         
+        //Only stated roles can register
         require(
             isValidRole(normalisedRole),
             "Invalid role. Must be Miner, Manufacturer, Certifier, or Retailer"
         );
+
+        //reject if blacklisted zone
+        string memory normalisedLocation = _toLowerCase(_location);
+        require(!isLocationBlacklisted(normalisedLocation), 
+            "Registration rejected: Location is in a conflict zone banned by the Kimberley Process");
 
         require(!entities[msg.sender].isRegistered, "Entity already registered");
 
@@ -59,6 +76,44 @@ contract EntityContract {
         entitiesByRole[normalisedRole].push(msg.sender);
 
         emit EntityRegistered(msg.sender, _name, normalisedRole, _licenseNumber);
+    }
+
+    //check if a location is blacklisted
+    function isLocationBlacklisted(string memory _location) private view returns (bool) {
+        string memory lowerLocation = _toLowerCase(_location);
+        
+        for (uint i = 0; i < blacklistedLocations.length; i++) {
+            if (containsString(lowerLocation, blacklistedLocations[i])) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    //check if a string contains another string
+    function containsString(string memory _source, string memory _search) private pure returns (bool) {
+        bytes memory sourceBytes = bytes(_source);
+        bytes memory searchBytes = bytes(_search);
+        
+        if (searchBytes.length > sourceBytes.length) {
+            return false;
+        }
+        
+        //substring search
+        for (uint i = 0; i <= sourceBytes.length - searchBytes.length; i++) {
+            bool found = true;
+            for (uint j = 0; j < searchBytes.length; j++) {
+                if (sourceBytes[i + j] != searchBytes[j]) {
+                    found = false;
+                    break;
+                }
+            }
+            if (found) {
+                return true;
+            }
+        }
+        
+        return false;
     }
 
     //check if a wallet address has a role
@@ -149,4 +204,5 @@ contract EntityContract {
             revert("Invalid role");
         }
     }
+    
 }
