@@ -35,7 +35,7 @@ contract ProvenanceContract {
         entityContract = EntityContract(_entityContractAddress);
     }
 
-        function registerRawDiamond(
+    function registerRawDiamond(
         string memory _origin,
         uint256 _extractionDate,
         uint256 _weight,
