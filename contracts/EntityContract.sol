@@ -34,6 +34,8 @@ contract EntityContract {
 
     //events
     event EntityRegistered(address indexed entityAddress, string name, string role, string licenseNumber);
+    event RegistrationRejected(string name, string location, string reason);
+    event TransferValidation(address from, address to, bool isValid, string message);
 
     //function to register entity
     function registerEntity(
@@ -78,6 +80,41 @@ contract EntityContract {
         emit EntityRegistered(msg.sender, _name, normalisedRole, _licenseNumber);
     }
 
+    //Check if a transfer is valid (both parties need to be registered entities)
+    function isValidTransfer(address _from, address _to) public returns (bool) {
+        bool fromRegistered = entities[_from].isRegistered;
+        bool toRegistered = entities[_to].isRegistered;
+        
+        string memory message;
+        bool isValid = false;
+        
+        if (fromRegistered && toRegistered) {
+            isValid = true;
+            message = string(abi.encodePacked(
+                "Valid transfer between registered entities: ", 
+                entities[_from].role, 
+                " to ", 
+                entities[_to].role
+            ));
+        } else {
+            if (!fromRegistered && !toRegistered) {
+                message = "Invalid transfer: Both sender and receiver are not registered entities";
+            } else if (!fromRegistered) {
+                message = "Invalid transfer: Sender is not a registered entity";
+            } else {
+                message = "Invalid transfer: Receiver is not a registered entity";
+            }
+        }
+        
+        emit TransferValidation(_from, _to, isValid, message);
+        return isValid;
+    }
+    
+    //view function to validate transfer - can be called by Provenance Contract
+    function validateTransfer(address _from, address _to) public view returns (bool) {
+        return entities[_from].isRegistered && entities[_to].isRegistered;
+    }
+
     //check if a location is blacklisted
     function isLocationBlacklisted(string memory _location) private view returns (bool) {
         string memory lowerLocation = _toLowerCase(_location);
@@ -90,7 +127,7 @@ contract EntityContract {
         return false;
     }
 
-    //check if a string contains another string
+    //string comparison helper method
     function containsString(string memory _source, string memory _search) private pure returns (bool) {
         bytes memory sourceBytes = bytes(_source);
         bytes memory searchBytes = bytes(_search);
