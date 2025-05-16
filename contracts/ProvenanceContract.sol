@@ -6,6 +6,48 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 
+//WARNING: DO NOT USE THE STATED BELOW
+//1)safeTransferFrom
+//2)transferFrom
+//3)approve
+//4)setApprovalForAll
+///// -ALWAYS USE transferDiamond() FOR ALL TRANSFERS 
+
+/////////////////
+//Miners
+////////////////
+//registerRawDiamond - use this to register newly mined diamonds with their origin and extraction details
+
+////////////////
+//Manufacturers
+///////////////
+//processDiamond - use this to process raw diamonds into cut/polished diamonds
+
+///////////////
+//Certifiers
+//////////////
+//certifyDiamond - use this to add certification details to a diamond
+
+//////////////
+//All stakeholders
+//////////////
+//!!!!!!!IMPORTANT!!!!!!!
+//transferDiamond - use this and ONLY this to transfer diamond between registered entities in the supply chain
+
+//////////////
+//For tracking and verification purposes
+//////////////
+//1)getDiamondInfo - use this to get complete details about a diamond
+//2)getDiamondHistory - use this to view the complete processing and ownership history
+
+
+/////////////
+//Admin
+/////////////
+//addProcessingRecord - use this to manually add processing records if needed
+
+
+
 //nft reference: https://docs.openzeppelin.com/contracts/3.x/erc721
 contract ProvenanceContract is ERC721Enumerable, Ownable {
     using Counters for Counters.Counter;

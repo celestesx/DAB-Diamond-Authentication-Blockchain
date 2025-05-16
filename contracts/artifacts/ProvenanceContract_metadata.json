@@ -1290,11 +1290,11 @@
 			]
 		},
 		"contracts/ProvenanceContract.sol": {
-			"keccak256": "0xede9dd761c29ba5163b1869f51e320004fd48db019678b65e77f4789e9a1e46e",
+			"keccak256": "0x97fe3d390d06519f93836246897c2bdcaca4e4c953a4bf4fd2091adb62749880",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://23eae582c29a3ea7e0d4a64d68258b6be23ec3f18c9237fc624c66b6c82753a8",
-				"dweb:/ipfs/QmNQqAdQf9CQq19h6K2fDBWVvvK983yCFiFpuv2UT7bXko"
+				"bzz-raw://71a10b4a529d033eb612f92008a9e91d894c78c9d05a93e6a3fe394ca78d152d",
+				"dweb:/ipfs/QmSTqTR6LxRYvfEB3FovJyYLwfd4Au9ttt9sz92PmiNwkX"
 			]
 		}
 	},
