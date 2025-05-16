@@ -69,7 +69,7 @@ contract MarketplaceContract is Ownable{
     //function to list the diamond by retailer
     function listDiamond(uint256 _diamondID) external {
         //check if the caller is the diamond owner in the provenance contract
-        (uint256 id, address currentOwner, , , , , , , ) = provenanceContract.getDiamondInfo(_diamondID);
+        (uint256 id, address currentOwner, , , , , , ) = provenanceContract.getDiamondInfo(_diamondID);
         require(currentOwner == msg.sender, "Only the diamond owner can list it");
         
         //check if the caller is a registered retailer
