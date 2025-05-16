@@ -38,7 +38,9 @@ contract MarketplaceContract is Ownable{
     ////////////
 
     ///////////events
-    event DiamondListed(uint256 indexed diamondId, address indexed seller);
+    event DiamondListed(uint256 indexed diamondID, address indexed seller);
+    event DiamondSold(uint256 indexed diamondID, address indexed seller, address indexed buyer);
+    event DiamondStatusUpdated(uint256 indexed diamondID, DiamondStatus status);
     ///////////
 
     //constructor
@@ -70,6 +72,38 @@ contract MarketplaceContract is Ownable{
         });
         
         emit DiamondListed(_diamondID, msg.sender);
+    }
+
+    //function for retailers to sell to consumers
+    function sellToConsumer(uint256 _diamondID, address _buyer, string memory _purchaseDetails) external {
+        DiamondListing storage listing = diamondListings[_diamondID];
+
+        require(listing.isListed, "Diamond is not listed for sale");
+        require(listing.status == DiamondStatus.Available, "Diamond is not available for sale");
+        require(listing.seller == msg.sender, "Only the seller can complete the sale");
+
+        //check if the seller is a registered retailer
+        (,,bool isRegistered,,string memory role) = entityContract.getEntityInfo(msg.sender);
+        require(isRegistered, "Seller is not a registered entity");
+        require(keccak256(abi.encodePacked(role)) == keccak256(abi.encodePacked("Retailer")), 
+            "Only retailers can complete initial sales to consumers");
+
+        //transfer the diamond ownership in the provenance contract
+        provenanceContract.transferDiamond(_diamondID, _buyer);
+
+        //update listing status
+        listing.isListed = false;
+        listing.status = DiamondStatus.Sold;
+
+        // Create ownership record for the consumer
+        consumerOwnership[_diamondID] = OwnershipRecord({
+            owner: _buyer,
+            purchaseDate: block.timestamp,
+            purchaseDetails: _purchaseDetails
+        });
+        
+        emit DiamondSold(_diamondID, listing.seller, _buyer);
+        emit DiamondStatusUpdated(_diamondID, DiamondStatus.Sold);
     }
 
 }
