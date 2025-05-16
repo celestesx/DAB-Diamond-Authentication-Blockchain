@@ -11,7 +11,7 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 //2)transferFrom
 //3)approve
 //4)setApprovalForAll
-///// -ALWAYS USE transferDiamond() FOR ALL TRANSFERS 
+///// -ALWAYS USE transferDiamond() OR transferToConsumer() FOR ALL TRANSFERS 
 
 /////////////////
 //Miners
@@ -33,6 +33,8 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 //////////////
 //!!!!!!!IMPORTANT!!!!!!!
 //transferDiamond - use this and ONLY this to transfer diamond between registered entities in the supply chain
+//transferToConsumer - use this and ONLY this to transfer diamond from retailer to consumer (non-registered entity)
+//transferBetweenConsumers - use this and ONLY this to transfer diamond between consumers (non-registered entities)
 
 //////////////
 //For tracking and verification purposes
@@ -75,10 +77,15 @@ contract ProvenanceContract is ERC721Enumerable, Ownable {
     //raw diamond ID -> processed diamond IDs
     mapping(uint256 => uint256[]) private processedDiamonds; 
 
+    // Track consumer addresses for verification
+    mapping(address => bool) private consumerAddresses;
+
     event DiamondRegistered(uint256 diamondID, address indexed miner, string origin, uint256 weight);
     event DiamondProcessed(uint256 rawDiamondID, uint256 newDiamondID, address indexed manufacturer);
     event DiamondCertified(uint256 diamondID, string certificationID, address indexed certifier);
     event ProcessingRecordAdded(uint256 diamondID, string processingDetail);
+    event DiamondTransferredToConsumer(uint256 diamondID, address indexed retailer, address indexed consumer);
+    event DiamondTransferredBetweenConsumers(uint256 diamondID, address indexed from, address indexed to);
 
     constructor(address _entityContractAddress) 
         ERC721("DiamondNFT", "DNFT") 
@@ -151,6 +158,67 @@ contract ProvenanceContract is ERC721Enumerable, Ownable {
 
         //transfer the NFT
         safeTransferFrom(msg.sender, _to, _diamondID);
+    }
+
+    // New function for retailers to transfer diamonds to consumers (non-registered entities)
+    function transferToConsumer(uint256 _diamondID, address _consumer) external {
+        //use ERC721Enumerable to check if token exists
+        require(_diamondID <= _tokenIDs.current() && _diamondID > 0, "Diamond does not exist");
+        require(ownerOf(_diamondID) == msg.sender, "Only the current owner can transfer");
+        
+        // Verify caller is a registered retailer
+        (,,bool isRegistered,,string memory role) = entityContract.getEntityInfo(msg.sender);
+        require(isRegistered, "Caller is not a registered entity");
+        require(keccak256(abi.encodePacked(role)) == keccak256(abi.encodePacked("Retailer")),
+            "Only retailers can transfer to consumers");
+            
+        // Verify consumer is not a registered entity
+        (,,bool isConsumerRegistered,,) = entityContract.getEntityInfo(_consumer);
+        require(!isConsumerRegistered, "Consumer should not be a registered entity");
+        
+        // Mark this address as a consumer address
+        consumerAddresses[_consumer] = true;
+        
+        // Add processing record
+        addProcessingRecord(_diamondID, string(abi.encodePacked(
+            "Sold to consumer ", addressToString(_consumer), 
+            " by retailer ", addressToString(msg.sender)
+        )));
+        
+        // Transfer the NFT directly - bypassing entity validation
+        safeTransferFrom(msg.sender, _consumer, _diamondID);
+        
+        emit DiamondTransferredToConsumer(_diamondID, msg.sender, _consumer);
+    }
+    
+    // Function for diamond transfers between consumers
+    function transferBetweenConsumers(uint256 _diamondID, address _toConsumer) external {
+        //use ERC721Enumerable to check if token exists
+        require(_diamondID <= _tokenIDs.current() && _diamondID > 0, "Diamond does not exist");
+        require(ownerOf(_diamondID) == msg.sender, "Only the current owner can transfer");
+        
+        // Verify consumer is not a registered entity
+        (,,bool isConsumerRegistered,,) = entityContract.getEntityInfo(_toConsumer);
+        require(!isConsumerRegistered, "Recipient should not be a registered entity");
+        
+        // Mark this address as a consumer address
+        consumerAddresses[_toConsumer] = true;
+        
+        // Add processing record
+        addProcessingRecord(_diamondID, string(abi.encodePacked(
+            "Transferred from consumer ", addressToString(msg.sender), 
+            " to consumer ", addressToString(_toConsumer)
+        )));
+        
+        // Transfer the NFT directly
+        safeTransferFrom(msg.sender, _toConsumer, _diamondID);
+        
+        emit DiamondTransferredBetweenConsumers(_diamondID, msg.sender, _toConsumer);
+    }
+    
+    // Check if an address is a consumer address
+    function isConsumer(address _address) external view returns (bool) {
+        return consumerAddresses[_address];
     }
 
     function processDiamond(
@@ -335,13 +403,11 @@ contract ProvenanceContract is ERC721Enumerable, Ownable {
         
         return string(buffer);
     }
-
-
-    
-    //to implement
-    // DONE 1. registerRawDiamond - for miners to register new diamonds
-    // 2. transferDiamond - transfer diamond between stakeholders
-    // 3. processDiamond - manufacturers process raw diamonds into new ones
-    // 4. certifyDiamond - certifiers add certification details
-    // 5. getDiamondHistory - get complete history of a diamond
 }
+   
+//to implement
+// DONE 1. registerRawDiamond - for miners to register new diamonds
+// 2. transferDiamond - transfer diamond between stakeholders
+// 3. processDiamond - manufacturers process raw diamonds into new ones
+// 4. certifyDiamond - certifiers add certification details
+// 5. getDiamondHistory - get complete history of a diamond

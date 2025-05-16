@@ -56,6 +56,7 @@ contract MarketplaceContract is Ownable{
     event DiamondTransferred(uint256 indexed diamondId, address indexed from, address indexed to, uint256 date);
     event DiamondTheftReported(uint256 indexed diamondId, address indexed reportedBy, uint256 reportDate);
     event DiamondLostReported(uint256 indexed diamondId, address indexed reportedBy, uint256 reportDate);
+    event DiamondFoundReported(uint256 indexed diamondId, address indexed reportedBy, uint256 reportDate);
     ///////////
 
     //constructor
@@ -66,79 +67,73 @@ contract MarketplaceContract is Ownable{
         provenanceContract = ProvenanceContract(_provenanceContractAddress);
     }
 
-    //function to list the diamond by retailer
-    function listDiamond(uint256 _diamondID) external {
-        //check if the caller is the diamond owner in the provenance contract
-        (uint256 id, address currentOwner, , , , , , ) = provenanceContract.getDiamondInfo(_diamondID);
-        require(currentOwner == msg.sender, "Only the diamond owner can list it");
-        
-        //check if the caller is a registered retailer
-        (,,bool isRegistered,,string memory role) = entityContract.getEntityInfo(msg.sender);
-        require(isRegistered, "Caller is not a registered entity");
-        require(keccak256(abi.encodePacked(role)) == keccak256(abi.encodePacked("Retailer")),
-            "Only retailers can list diamonds for initial sale");
-        
-        //Create the listing
-        diamondListings[_diamondID] = DiamondListing({
-            diamondID: _diamondID,
-            seller: msg.sender,
-            isListed: true,
-            status: DiamondStatus.Available
-        });
-        
-        emit DiamondListed(_diamondID, msg.sender);
-    }
-
-    //function for retailers to sell to consumers
+    //function for retailers to sell directly to consumers without listing
     function sellToConsumer(uint256 _diamondID, address _buyer, string memory _purchaseDetails) external {
-        DiamondListing storage listing = diamondListings[_diamondID];
-
-        require(listing.isListed, "Diamond is not listed for sale");
-        require(listing.status == DiamondStatus.Available, "Diamond is not available for sale");
-        require(listing.seller == msg.sender, "Only the seller can complete the sale");
-
-        //check if the seller is a registered retailer
+        // Check if the caller is the diamond owner in the provenance contract
+        (uint256 id, address currentOwner, , , , , , ) = provenanceContract.getDiamondInfo(_diamondID);
+        require(currentOwner == msg.sender, "Only the diamond owner can sell it");
+        
+        // Check if the caller is a registered retailer
         (,,bool isRegistered,,string memory role) = entityContract.getEntityInfo(msg.sender);
         require(isRegistered, "Seller is not a registered entity");
         require(keccak256(abi.encodePacked(role)) == keccak256(abi.encodePacked("Retailer")), 
             "Only retailers can complete initial sales to consumers");
-
-        //transfer the diamond ownership in the provenance contract
-        provenanceContract.transferDiamond(_diamondID, _buyer);
-
-        //update listing status
-        listing.isListed = false;
-        listing.status = DiamondStatus.Sold;
-
-        //create ownership record for the consumer
+        
+        // Check that buyer is not a registered entity
+        (,,bool isBuyerRegistered,,) = entityContract.getEntityInfo(_buyer);
+        require(!isBuyerRegistered, "Buyer cannot be a registered entity");
+        
+        // Update or create listing status directly (no need to list first)
+        diamondListings[_diamondID] = DiamondListing({
+            diamondID: _diamondID,
+            seller: msg.sender,
+            isListed: false, // Not needed since we're selling directly
+            status: DiamondStatus.Sold
+        });
+        
+        // Create ownership record for the consumer
         consumerOwnership[_diamondID] = OwnershipRecord({
             owner: _buyer,
             purchaseDate: block.timestamp,
             purchaseDetails: _purchaseDetails
         });
         
-        emit DiamondSold(_diamondID, listing.seller, _buyer);
+        // Transfer ownership in the provenance contract using the special consumer transfer
+        provenanceContract.transferToConsumer(_diamondID, _buyer);
+        
+        emit DiamondSold(_diamondID, msg.sender, _buyer);
         emit DiamondStatusUpdated(_diamondID, DiamondStatus.Sold);
     }
     
     ////function to transfer diamond from consumer to consumer
     function transferConsumerDiamond(uint256 _diamondID, address _newOwner, string memory _transferDetails) external {
-        //check if the caller is the current consumer owner
+        // Check if the caller is the current consumer owner
         require(consumerOwnership[_diamondID].owner == msg.sender, "Only the current owner can transfer");
         
-        //check if diamond is not reported stolen or lost
+        // Check if the diamond is actually owned by the caller in the provenance contract
+        (,address currentProvenanceOwner,,,,,, ) = provenanceContract.getDiamondInfo(_diamondID);
+        require(currentProvenanceOwner == msg.sender, "Caller does not own this diamond in the provenance contract");
+        
+        // Check that new owner is not a registered entity
+        (,,bool isNewOwnerRegistered,,) = entityContract.getEntityInfo(_newOwner);
+        require(!isNewOwnerRegistered, "New owner cannot be a registered entity");
+        
+        // Check if diamond is not reported stolen or lost
         require(diamondListings[_diamondID].status != DiamondStatus.Stolen, "Cannot transfer a stolen diamond");
         require(diamondListings[_diamondID].status != DiamondStatus.Lost, "Cannot transfer a lost diamond");
         
-        //transfer the diamond in the provenance contract
-        provenanceContract.transferDiamond(_diamondID, _newOwner);
-        
-        //update consumer ownership record
+        // Update consumer ownership record
         consumerOwnership[_diamondID] = OwnershipRecord({
             owner: _newOwner,
             purchaseDate: block.timestamp,
             purchaseDetails: _transferDetails
         });
+        
+        // Transfer the diamond in the provenance contract using the consumer-to-consumer transfer
+        provenanceContract.transferBetweenConsumers(_diamondID, _newOwner);
+        
+        // Make sure the status stays as Sold
+        diamondListings[_diamondID].status = DiamondStatus.Sold;
         
         emit DiamondTransferred(_diamondID, msg.sender, _newOwner, block.timestamp);
     }
@@ -147,6 +142,10 @@ contract MarketplaceContract is Ownable{
     function reportStolen(uint256 _diamondID, string memory _reportDetails) external {
         //check if the caller is the registered owner
         require(consumerOwnership[_diamondID].owner == msg.sender, "Only the registered owner can report theft");
+        
+        // Check if the diamond is actually owned by the caller in the provenance contract
+        (,address currentProvenanceOwner,,,,,, ) = provenanceContract.getDiamondInfo(_diamondID);
+        require(currentProvenanceOwner == msg.sender, "Caller does not own this diamond in the provenance contract");
         
         diamondListings[_diamondID].status = DiamondStatus.Stolen;
         
@@ -164,13 +163,36 @@ contract MarketplaceContract is Ownable{
     
     //function to report a lost diamond
     function reportLost(uint256 _diamondId) external {
-        //ceck if the caller is the registered owner
+        //check if the caller is the registered owner
         require(consumerOwnership[_diamondId].owner == msg.sender, "Only the registered owner can report loss");
+        
+        // Check if the diamond is actually owned by the caller in the provenance contract
+        (,address currentProvenanceOwner,,,,,, ) = provenanceContract.getDiamondInfo(_diamondId);
+        require(currentProvenanceOwner == msg.sender, "Caller does not own this diamond in the provenance contract");
         
         diamondListings[_diamondId].status = DiamondStatus.Lost;
         
         emit DiamondLostReported(_diamondId, msg.sender, block.timestamp);
         emit DiamondStatusUpdated(_diamondId, DiamondStatus.Lost);
+    }
+    
+    //function to report a found diamond that was previously lost
+    function reportFound(uint256 _diamondId) external {
+        //check if the caller is the registered owner
+        require(consumerOwnership[_diamondId].owner == msg.sender, "Only the registered owner can report found");
+        
+        // Check if the diamond is actually owned by the caller in the provenance contract
+        (,address currentProvenanceOwner,,,,,, ) = provenanceContract.getDiamondInfo(_diamondId);
+        require(currentProvenanceOwner == msg.sender, "Caller does not own this diamond in the provenance contract");
+        
+        // Check that the diamond was previously reported as lost
+        require(diamondListings[_diamondId].status == DiamondStatus.Lost, "Diamond was not reported as lost");
+        
+        // Update the status back to Sold
+        diamondListings[_diamondId].status = DiamondStatus.Sold;
+        
+        emit DiamondFoundReported(_diamondId, msg.sender, block.timestamp);
+        emit DiamondStatusUpdated(_diamondId, DiamondStatus.Sold);
     }
     
     //function to resolve a report
@@ -179,10 +201,10 @@ contract MarketplaceContract is Ownable{
         
         theftReports[_diamondId][_reportIndex].isResolved = true;
         
-        //if this was the most recent report and it's resolved thenn reset the status
+        //if this was the most recent report and it's resolved then reset the status
         if (_reportIndex == theftReports[_diamondId].length - 1) {
-            diamondListings[_diamondId].status = DiamondStatus.Available;
-            emit DiamondStatusUpdated(_diamondId, DiamondStatus.Available);
+            diamondListings[_diamondId].status = DiamondStatus.Sold; // Set to Sold rather than Available
+            emit DiamondStatusUpdated(_diamondId, DiamondStatus.Sold);
         }
     }
 
@@ -234,6 +256,12 @@ contract MarketplaceContract is Ownable{
         return details;
     }
 
+    //function to verify consumer ownership matches provenance contract
+    function verifyOwnership(uint256 _diamondId) external view returns (bool) {
+        (,address provenanceOwner,,,,,, ) = provenanceContract.getDiamondInfo(_diamondId);
+        return consumerOwnership[_diamondId].owner == provenanceOwner;
+    }
+
     function uint256ToString(uint256 value) internal pure returns (string memory) {
         if (value == 0) {
             return "0";
@@ -281,8 +309,6 @@ contract MarketplaceContract is Ownable{
         if (_status == DiamondStatus.Lost) return "Reported Lost";
         return "Unknown";
     }
-    
-
 }
 
 //TO IMPLEMENT
