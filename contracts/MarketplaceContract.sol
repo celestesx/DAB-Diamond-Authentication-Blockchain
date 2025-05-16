@@ -41,6 +41,8 @@ contract MarketplaceContract is Ownable{
     event DiamondListed(uint256 indexed diamondID, address indexed seller);
     event DiamondSold(uint256 indexed diamondID, address indexed seller, address indexed buyer);
     event DiamondStatusUpdated(uint256 indexed diamondID, DiamondStatus status);
+    event DiamondTransferred(uint256 indexed diamondId, address indexed from, address indexed to, uint256 date);
+
     ///////////
 
     //constructor
@@ -95,7 +97,7 @@ contract MarketplaceContract is Ownable{
         listing.isListed = false;
         listing.status = DiamondStatus.Sold;
 
-        // Create ownership record for the consumer
+        //create ownership record for the consumer
         consumerOwnership[_diamondID] = OwnershipRecord({
             owner: _buyer,
             purchaseDate: block.timestamp,
@@ -106,12 +108,34 @@ contract MarketplaceContract is Ownable{
         emit DiamondStatusUpdated(_diamondID, DiamondStatus.Sold);
     }
 
+    function transferConsumerDiamond(uint256 _diamondID, address _newOwner, string memory _transferDetails) external {
+        //check if the caller is the current consumer owner
+        require(consumerOwnership[_diamondID].owner == msg.sender, "Only the current owner can transfer");
+        
+        //check if diamond is not reported stolen or lost
+        require(diamondListings[_diamondID].status != DiamondStatus.Stolen, "Cannot transfer a stolen diamond");
+        require(diamondListings[_diamondID].status != DiamondStatus.Lost, "Cannot transfer a lost diamond");
+        
+        //transfer the diamond in the provenance contract
+        provenanceContract.transferDiamond(_diamondID, _newOwner);
+        
+        //update consumer ownership record
+        consumerOwnership[_diamondID] = OwnershipRecord({
+            owner: _newOwner,
+            purchaseDate: block.timestamp,
+            purchaseDetails: _transferDetails
+        });
+        
+        emit DiamondTransferred(_diamondID, msg.sender, _newOwner, block.timestamp);
+    }
+
+
 }
 
 //TO IMPLEMENT
 //DONE listDiamond
-//sellToConsumer
-//transferConsumerDiamond
+//DONE sellToConsumer
+//DONE transferConsumerDiamond
 //reportStolen
 //reportLost
 //resolveTheftReport
