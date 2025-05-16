@@ -260,7 +260,6 @@ contract ProvenanceContract is ERC721Enumerable, Ownable {
         uint256 extractionDate,
         uint256 weight,
         string memory characteristics,
-        bool isCertified,
         string memory certificationID,
         uint256 rawDiamondID
     ) {
@@ -277,7 +276,6 @@ contract ProvenanceContract is ERC721Enumerable, Ownable {
             diamond.extractionDate,
             diamond.weight,
             diamond.characteristics,
-            diamond.isCertified,
             diamond.certificationID,
             diamond.rawDiamondID
         );

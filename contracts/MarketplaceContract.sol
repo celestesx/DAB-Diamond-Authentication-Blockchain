@@ -31,6 +31,18 @@ contract MarketplaceContract is Ownable{
         bool isResolved;
     }
 
+    struct DiamondDetails {
+        uint256 id;
+        address currentOwner;
+        string origin;
+        uint256 extractionDate;
+        uint256 weight;
+        string characteristics;
+        string certificationID;
+        uint256 rawDiamondID;
+        DiamondStatus marketStatus;
+    }
+
     ////////////mappings
     mapping(uint256 => DiamondListing) private diamondListings;
     mapping(uint256 => OwnershipRecord) private consumerOwnership;
@@ -42,7 +54,8 @@ contract MarketplaceContract is Ownable{
     event DiamondSold(uint256 indexed diamondID, address indexed seller, address indexed buyer);
     event DiamondStatusUpdated(uint256 indexed diamondID, DiamondStatus status);
     event DiamondTransferred(uint256 indexed diamondId, address indexed from, address indexed to, uint256 date);
-
+    event DiamondTheftReported(uint256 indexed diamondId, address indexed reportedBy, uint256 reportDate);
+    event DiamondLostReported(uint256 indexed diamondId, address indexed reportedBy, uint256 reportDate);
     ///////////
 
     //constructor
@@ -107,7 +120,8 @@ contract MarketplaceContract is Ownable{
         emit DiamondSold(_diamondID, listing.seller, _buyer);
         emit DiamondStatusUpdated(_diamondID, DiamondStatus.Sold);
     }
-
+    
+    ////function to transfer diamond from consumer to consumer
     function transferConsumerDiamond(uint256 _diamondID, address _newOwner, string memory _transferDetails) external {
         //check if the caller is the current consumer owner
         require(consumerOwnership[_diamondID].owner == msg.sender, "Only the current owner can transfer");
@@ -129,6 +143,145 @@ contract MarketplaceContract is Ownable{
         emit DiamondTransferred(_diamondID, msg.sender, _newOwner, block.timestamp);
     }
 
+    //function to report stolen diamond
+    function reportStolen(uint256 _diamondID, string memory _reportDetails) external {
+        //check if the caller is the registered owner
+        require(consumerOwnership[_diamondID].owner == msg.sender, "Only the registered owner can report theft");
+        
+        diamondListings[_diamondID].status = DiamondStatus.Stolen;
+        
+        //create the theft report
+        theftReports[_diamondID].push(TheftReport({
+            reportDate: block.timestamp,
+            reportedBy: msg.sender,
+            reportDetails: _reportDetails,
+            isResolved: false
+        }));
+        
+        emit DiamondTheftReported(_diamondID, msg.sender, block.timestamp);
+        emit DiamondStatusUpdated(_diamondID, DiamondStatus.Stolen);
+    }
+    
+    //function to report a lost diamond
+    function reportLost(uint256 _diamondId, string memory _reportDetails) external {
+        //ceck if the caller is the registered owner
+        require(consumerOwnership[_diamondId].owner == msg.sender, "Only the registered owner can report loss");
+        
+        diamondListings[_diamondId].status = DiamondStatus.Lost;
+        
+        emit DiamondLostReported(_diamondId, msg.sender, block.timestamp);
+        emit DiamondStatusUpdated(_diamondId, DiamondStatus.Lost);
+    }
+    
+    //function to resolve a report
+    function resolveTheftReport(uint256 _diamondId, uint256 _reportIndex) external onlyOwner {
+        require(_reportIndex < theftReports[_diamondId].length, "Invalid report index");
+        
+        theftReports[_diamondId][_reportIndex].isResolved = true;
+        
+        //if this was the most recent report and it's resolved thenn reset the status
+        if (_reportIndex == theftReports[_diamondId].length - 1) {
+            diamondListings[_diamondId].status = DiamondStatus.Available;
+            emit DiamondStatusUpdated(_diamondId, DiamondStatus.Available);
+        }
+    }
+
+    //function to get theft report
+    function getTheftReport(uint256 _diamondId, uint256 _reportIndex) external view returns (
+        uint256 reportDate,
+        address reportedBy,
+        string memory reportDetails,
+        bool isResolved
+    ) {
+        require(_reportIndex < theftReports[_diamondId].length, "Invalid report index");
+        
+        TheftReport storage report = theftReports[_diamondId][_reportIndex];
+        return (report.reportDate, report.reportedBy, report.reportDetails, report.isResolved);
+    }
+
+    //function to get diamond status
+    function getDiamondStatus(uint256 _diamondId) external view returns (DiamondStatus) {
+        return diamondListings[_diamondId].status;
+    }
+
+    //function to get current owner
+    function getConsumerOwnership(uint256 _diamondId) external view returns (
+        address owner,
+        uint256 purchaseDate,
+        string memory purchaseDetails
+    ) {
+        OwnershipRecord storage record = consumerOwnership[_diamondId];
+        return (record.owner, record.purchaseDate, record.purchaseDetails);
+    }
+
+    //function to get the diamond details
+    function getDiamondDetails(uint256 _diamondId) external view returns (DiamondDetails memory details) {
+        // Get basic diamond info from provenance contract
+        (
+            details.id, 
+            details.currentOwner, 
+            details.origin, 
+            details.extractionDate, 
+            details.weight, 
+            details.characteristics, 
+            details.certificationID, 
+            details.rawDiamondID
+        ) = provenanceContract.getDiamondInfo(_diamondId);
+        
+        // Add marketplace status
+        details.marketStatus = diamondListings[_diamondId].status;
+        
+        return details;
+    }
+
+    function uint256ToString(uint256 value) internal pure returns (string memory) {
+        if (value == 0) {
+            return "0";
+        }
+        
+        uint256 temp = value;
+        uint256 digits;
+        
+        while (temp != 0) {
+            digits++;
+            temp /= 10;
+        }
+        
+        bytes memory buffer = new bytes(digits);
+        
+        while (value != 0) {
+            digits -= 1;
+            buffer[digits] = bytes1(uint8(48 + uint256(value % 10)));
+            value /= 10;
+        }
+        
+        return string(buffer);
+    }
+
+    function addressToString(address _addr) internal pure returns (string memory) {
+        bytes32 value = bytes32(uint256(uint160(_addr)));
+        bytes memory alphabet = "0123456789abcdef";
+        
+        bytes memory str = new bytes(42);
+        str[0] = '0';
+        str[1] = 'x';
+        
+        for (uint256 i = 0; i < 20; i++) {
+            str[2 + i * 2] = alphabet[uint8(value[i + 12] >> 4)];
+            str[3 + i * 2] = alphabet[uint8(value[i + 12] & 0x0f)];
+        }
+        
+        return string(str);
+    }
+
+    function statusToString(DiamondStatus _status) internal pure returns (string memory) {
+        if (_status == DiamondStatus.Available) return "Available";
+        if (_status == DiamondStatus.Sold) return "Sold";
+        if (_status == DiamondStatus.Stolen) return "Reported Stolen";
+        if (_status == DiamondStatus.Lost) return "Reported Lost";
+        return "Unknown";
+    }
+    
 
 }
 
@@ -136,11 +289,10 @@ contract MarketplaceContract is Ownable{
 //DONE listDiamond
 //DONE sellToConsumer
 //DONE transferConsumerDiamond
-//reportStolen
-//reportLost
-//resolveTheftReport
-//verifyDiamond
-//getDiamondStatus
-//getConsumerOwnership
-//generateProvenanceCertificate
+//DONE reportStolen
+//DONE reportLost
+//DONE resolveTheftReport
+//DONE getDiamondStatus
+//DONE getConsumerOwnership
+//DONE generateProvenanceCertificate
 //
