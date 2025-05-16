@@ -163,7 +163,7 @@ contract MarketplaceContract is Ownable{
     }
     
     //function to report a lost diamond
-    function reportLost(uint256 _diamondId, string memory _reportDetails) external {
+    function reportLost(uint256 _diamondId) external {
         //ceck if the caller is the registered owner
         require(consumerOwnership[_diamondId].owner == msg.sender, "Only the registered owner can report loss");
         
@@ -294,5 +294,5 @@ contract MarketplaceContract is Ownable{
 //DONE resolveTheftReport
 //DONE getDiamondStatus
 //DONE getConsumerOwnership
-//DONE generateProvenanceCertificate
+//DONE getDiamondDetails
 //
