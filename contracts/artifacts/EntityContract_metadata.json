@@ -37,6 +37,62 @@
 				"type": "event"
 			},
 			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": false,
+						"internalType": "string",
+						"name": "name",
+						"type": "string"
+					},
+					{
+						"indexed": false,
+						"internalType": "string",
+						"name": "location",
+						"type": "string"
+					},
+					{
+						"indexed": false,
+						"internalType": "string",
+						"name": "reason",
+						"type": "string"
+					}
+				],
+				"name": "RegistrationRejected",
+				"type": "event"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": false,
+						"internalType": "address",
+						"name": "from",
+						"type": "address"
+					},
+					{
+						"indexed": false,
+						"internalType": "address",
+						"name": "to",
+						"type": "address"
+					},
+					{
+						"indexed": false,
+						"internalType": "bool",
+						"name": "isValid",
+						"type": "bool"
+					},
+					{
+						"indexed": false,
+						"internalType": "string",
+						"name": "message",
+						"type": "string"
+					}
+				],
+				"name": "TransferValidation",
+				"type": "event"
+			},
+			{
 				"inputs": [
 					{
 						"internalType": "string",
@@ -97,6 +153,30 @@
 			{
 				"inputs": [
 					{
+						"internalType": "address",
+						"name": "_from",
+						"type": "address"
+					},
+					{
+						"internalType": "address",
+						"name": "_to",
+						"type": "address"
+					}
+				],
+				"name": "isValidTransfer",
+				"outputs": [
+					{
+						"internalType": "bool",
+						"name": "",
+						"type": "bool"
+					}
+				],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
 						"internalType": "string",
 						"name": "_name",
 						"type": "string"
@@ -121,45 +201,35 @@
 				"outputs": [],
 				"stateMutability": "nonpayable",
 				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "_from",
+						"type": "address"
+					},
+					{
+						"internalType": "address",
+						"name": "_to",
+						"type": "address"
+					}
+				],
+				"name": "validateTransfer",
+				"outputs": [
+					{
+						"internalType": "bool",
+						"name": "",
+						"type": "bool"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
 			}
 		],
 		"devdoc": {
-			"details": "Simplified version that manages registration of stakeholders in diamond supply chain",
 			"kind": "dev",
-			"methods": {
-				"getEntitiesByRole(string)": {
-					"details": "Get all entities with a specific role",
-					"params": {
-						"_role": "Role to filter by (e.g., \"Miner\", \"miner\", \"MANUFACTURER\")"
-					},
-					"returns": {
-						"_0": "Array of entity addresses with the specified role"
-					}
-				},
-				"getEntityInfo(address)": {
-					"details": "Get entity information",
-					"params": {
-						"_entityAddress": "Address of the entity"
-					},
-					"returns": {
-						"isRegistered": "Whether the entity is registered",
-						"licenseNumber": "License number of the entity",
-						"location": "Location of the entity",
-						"name": "Name of the entity",
-						"role": "Role of the entity as string"
-					}
-				},
-				"registerEntity(string,string,string,string)": {
-					"details": "Register a new entity in the system",
-					"params": {
-						"_licenseNumber": "License number for the entity",
-						"_location": "Location of the entity",
-						"_name": "Name of the entity",
-						"_role": "Role of the entity (e.g. \"Miner\", \"MANUFACTURER\", \"certifier\", \"retailer\")"
-					}
-				}
-			},
-			"title": "EntityContract",
+			"methods": {},
 			"version": 1
 		},
 		"userdoc": {
@@ -170,7 +240,7 @@
 	},
 	"settings": {
 		"compilationTarget": {
-			"contracts/EntityContract2.sol": "EntityContract"
+			"contracts/EntityContract.sol": "EntityContract"
 		},
 		"evmVersion": "cancun",
 		"libraries": {},
@@ -184,12 +254,12 @@
 		"remappings": []
 	},
 	"sources": {
-		"contracts/EntityContract2.sol": {
-			"keccak256": "0x935b352d398011dd1419a107e2a12c3ea77478b0bfc3a9a9e44426deabcaffac",
+		"contracts/EntityContract.sol": {
+			"keccak256": "0xac3a4577e71f2e212f1eeeaca39727b2388ceacbbb53031a6a4ee0635d02fa91",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://e8e675dc4103b2e6fde4c14477580fa801fbd5e5c022f26b3c35ac9844acf8ee",
-				"dweb:/ipfs/QmP6JY8xYiTyGEDSKdzxo258mEVu6TGuwcXM3r8inUeiXE"
+				"bzz-raw://9426fc978bac3caebd1ac3da6973441afd21b68f5488a2f54d9988e0fda28094",
+				"dweb:/ipfs/QmTNPMEWcz5r8wWNj7v3Dec22ZvUxwrpv41ro6j17ix85j"
 			]
 		}
 	},
