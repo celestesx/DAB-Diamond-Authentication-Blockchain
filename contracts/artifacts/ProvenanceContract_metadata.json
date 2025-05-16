@@ -1,0 +1,189 @@
+{
+	"compiler": {
+		"version": "0.8.26+commit.8a97fa7a"
+	},
+	"language": "Solidity",
+	"output": {
+		"abi": [
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "_entityContractAddress",
+						"type": "address"
+					}
+				],
+				"stateMutability": "nonpayable",
+				"type": "constructor"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": false,
+						"internalType": "uint256",
+						"name": "diamondID",
+						"type": "uint256"
+					},
+					{
+						"indexed": true,
+						"internalType": "address",
+						"name": "miner",
+						"type": "address"
+					},
+					{
+						"indexed": false,
+						"internalType": "string",
+						"name": "origin",
+						"type": "string"
+					},
+					{
+						"indexed": false,
+						"internalType": "uint256",
+						"name": "weight",
+						"type": "uint256"
+					}
+				],
+				"name": "DiamondRegistered",
+				"type": "event"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"name": "diamonds",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "id",
+						"type": "uint256"
+					},
+					{
+						"internalType": "address",
+						"name": "currentOwner",
+						"type": "address"
+					},
+					{
+						"internalType": "string",
+						"name": "origin",
+						"type": "string"
+					},
+					{
+						"internalType": "uint256",
+						"name": "extractionDate",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "weight",
+						"type": "uint256"
+					},
+					{
+						"internalType": "string",
+						"name": "characteristics",
+						"type": "string"
+					},
+					{
+						"internalType": "bool",
+						"name": "isCertified",
+						"type": "bool"
+					},
+					{
+						"internalType": "string",
+						"name": "certificationID",
+						"type": "string"
+					},
+					{
+						"internalType": "uint256",
+						"name": "rawDiamondID",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "string",
+						"name": "_origin",
+						"type": "string"
+					},
+					{
+						"internalType": "uint256",
+						"name": "_extractionDate",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "_weight",
+						"type": "uint256"
+					},
+					{
+						"internalType": "string",
+						"name": "_characteristics",
+						"type": "string"
+					}
+				],
+				"name": "registerRawDiamond",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			}
+		],
+		"devdoc": {
+			"kind": "dev",
+			"methods": {},
+			"version": 1
+		},
+		"userdoc": {
+			"kind": "user",
+			"methods": {},
+			"version": 1
+		}
+	},
+	"settings": {
+		"compilationTarget": {
+			"contracts/ProvenanceContract.sol": "ProvenanceContract"
+		},
+		"evmVersion": "cancun",
+		"libraries": {},
+		"metadata": {
+			"bytecodeHash": "ipfs"
+		},
+		"optimizer": {
+			"enabled": false,
+			"runs": 200
+		},
+		"remappings": []
+	},
+	"sources": {
+		"contracts/EntityContract.sol": {
+			"keccak256": "0xac3a4577e71f2e212f1eeeaca39727b2388ceacbbb53031a6a4ee0635d02fa91",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://9426fc978bac3caebd1ac3da6973441afd21b68f5488a2f54d9988e0fda28094",
+				"dweb:/ipfs/QmTNPMEWcz5r8wWNj7v3Dec22ZvUxwrpv41ro6j17ix85j"
+			]
+		},
+		"contracts/ProvenanceContract.sol": {
+			"keccak256": "0x74cf0922f41807e723203ba28d655441b7c50f504ab9b5c0fb98616bcc6b4329",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://a2197ebd2da8c0e1eec075daa10ec4bcb874451a829ecf89893b101c5b38de2e",
+				"dweb:/ipfs/QmeBHxuUeSp4Lirn2r3uzVM4YJmf1rMCPMcPNbeJEsf8WZ"
+			]
+		}
+	},
+	"version": 1
+}
