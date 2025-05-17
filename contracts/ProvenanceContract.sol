@@ -51,321 +51,339 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 
 
 //nft reference: https://docs.openzeppelin.com/contracts/3.x/erc721
-contract ProvenanceContract is ERC721Enumerable, Ownable {
+contract Provenance is ERC721Enumerable, Ownable {
     using Counters for Counters.Counter;
-    Counters.Counter private _tokenIDs;
-
-    EntityContract private entityContract;
-
-    //diamond struct to track provenance
+    
+    // Structs
     struct Diamond {
-        uint256 id; //same as the token ID
         string origin;
         uint256 extractionDate;
-        //weight is in carats
-        uint256 weight; 
+        uint256 weight;
         string characteristics;
         bool isCertified;
         string certificationID;
-        string[] processingHistory;
-        //this is for the original raw diamond (0 if this is a raw diamond)
-        uint256 rawDiamondID; 
+        uint256 rawDiamondID; // 0 for raw diamonds
     }
-
-    mapping(uint256 => Diamond) public diamonds;
-
-    //raw diamond ID -> processed diamond IDs
-    mapping(uint256 => uint256[]) private processedDiamonds; 
-
-    // Track consumer addresses for verification
-    mapping(address => bool) private consumerAddresses;
-
-    event DiamondRegistered(uint256 diamondID, address indexed miner, string origin, uint256 weight);
-    event DiamondProcessed(uint256 rawDiamondID, uint256 newDiamondID, address indexed manufacturer);
-    event DiamondCertified(uint256 diamondID, string certificationID, address indexed certifier);
-    event ProcessingRecordAdded(uint256 diamondID, string processingDetail);
-    event DiamondTransferredToConsumer(uint256 diamondID, address indexed retailer, address indexed consumer);
-    event DiamondTransferredBetweenConsumers(uint256 diamondID, address indexed from, address indexed to);
-
-    constructor(address _entityContractAddress) 
-        ERC721("DiamondNFT", "DNFT") 
-        Ownable(msg.sender) //pass the deployer's address as the initial owner to Ownable
+    
+    // State variables
+    Counters.Counter private _tokenIds;
+    EntityContract private _entityContract;
+    
+    // Mappings
+    mapping(uint256 => Diamond) private _diamonds;
+    mapping(uint256 => string[]) private _diamondHistory;
+    mapping(uint256 => uint256[]) private _processedDiamonds;
+    mapping(uint256 => bool) private _inConsumerMarket;
+    
+    // Events
+    event DiamondRegistered(uint256 indexed diamondId, address indexed miner, string origin, uint256 weight);
+    event DiamondProcessed(uint256 indexed rawDiamondId, uint256 indexed newDiamondId, address indexed manufacturer);
+    event DiamondCertified(uint256 indexed diamondId, string certificationId, address indexed certifier);
+    event DiamondTransferred(uint256 indexed diamondId, address indexed from, address indexed to, string transferType);
+    event HistoryRecordAdded(uint256 indexed diamondId, string record);
+    
+    // Constructor
+    constructor(address entityContractAddress) 
+        ERC721("DiamondNFT", "DNFT")
+        Ownable(msg.sender)
     {
-        entityContract = EntityContract(_entityContractAddress);
+        _entityContract = EntityContract(entityContractAddress);
     }
-
-    //function to register a raw diamond (only can be completed by registered miners)
+    
+    // ====== External/Public Functions ======
+    
+    /**
+     * @dev Register a new raw diamond (miners only)
+     */
     function registerRawDiamond(
-        string memory _origin,
-        uint256 _extractionDate,
-        uint256 _weight,
-        string memory _characteristics
+        string calldata origin,
+        uint256 extractionDate,
+        uint256 weight,
+        string calldata characteristics
     ) external returns (uint256) {
-        //verify the caller is a miner
-        (,,bool isRegistered,,string memory role) = entityContract.getEntityInfo(msg.sender);
-        require(isRegistered, "Caller is not a registered entity");
-        require(keccak256(abi.encodePacked(role)) == keccak256(abi.encodePacked("Miner")),
-            "Only miners can register new diamonds");
+        // Check if caller is a miner
+        require(_hasRole(msg.sender, "Miner"), "Only miners can register diamonds");
         
-        //increment and get a new token id
-        _tokenIDs.increment();
-        uint256 diamondID = _tokenIDs.current();
+        // Get new diamond ID
+        _tokenIds.increment();
+        uint256 diamondId = _tokenIds.current();
         
-        //create empty array for processing history
-        string[] memory processingHistory = new string[](0);
-        
-        //store the diamond information
-        diamonds[diamondID] = Diamond({
-            id: diamondID,
-            origin: _origin,
-            extractionDate: _extractionDate,
-            weight: _weight,
-            characteristics: _characteristics,
+        // Create diamond
+        _diamonds[diamondId] = Diamond({
+            origin: origin,
+            extractionDate: extractionDate,
+            weight: weight,
+            characteristics: characteristics,
             isCertified: false,
             certificationID: "",
-            processingHistory: processingHistory,
-            rawDiamondID: 0 //0 because this is a raw diamond
+            rawDiamondID: 0 // Raw diamond
         });
         
-        //mint the nft to the miner
-        _safeMint(msg.sender, diamondID);
+        // Mint NFT
+        _safeMint(msg.sender, diamondId);
         
-        //add first processing record
-        addProcessingRecord(diamondID, string(abi.encodePacked(
-            "Registered as raw diamond by miner ", addressToString(msg.sender),
-            " from ", _origin
-        )));
+        // Add history record
+        _addHistoryRecord(
+            diamondId, 
+            "REGISTERED", 
+            msg.sender, 
+            string(abi.encodePacked("Origin: ", origin))
+        );
         
-        emit DiamondRegistered(diamondID, msg.sender, _origin, _weight);
-        
-        return diamondID;
-    }
-
-    function transferDiamond(uint256 _diamondID, address _to) external {
-        //use ERC721Enumerable to check if token exists
-        require(_diamondID <= _tokenIDs.current() && _diamondID > 0, "Diamond does not exist");
-        require(ownerOf(_diamondID) == msg.sender, "Only the current owner can transfer");
-
-        //validate the transfer using entity contract
-        bool isValidTransfer = entityContract.isValidTransfer(msg.sender, _to);
-        require(isValidTransfer, "Invalid transfer between entities");
-
-        //add processing record to track the transfer
-        addProcessingRecord(_diamondID, string(abi.encodePacked(
-            "Transferred from ", addressToString(msg.sender), 
-            " to ", addressToString(_to)
-        )));
-
-        //transfer the NFT
-        safeTransferFrom(msg.sender, _to, _diamondID);
-    }
-
-    // New function for retailers to transfer diamonds to consumers (non-registered entities)
-    function transferToConsumer(uint256 _diamondID, address _consumer) external {
-        //use ERC721Enumerable to check if token exists
-        require(_diamondID <= _tokenIDs.current() && _diamondID > 0, "Diamond does not exist");
-        require(ownerOf(_diamondID) == msg.sender, "Only the current owner can transfer");
-        
-        // Verify caller is a registered retailer
-        (,,bool isRegistered,,string memory role) = entityContract.getEntityInfo(msg.sender);
-        require(isRegistered, "Caller is not a registered entity");
-        require(keccak256(abi.encodePacked(role)) == keccak256(abi.encodePacked("Retailer")),
-            "Only retailers can transfer to consumers");
-            
-        // Verify consumer is not a registered entity
-        (,,bool isConsumerRegistered,,) = entityContract.getEntityInfo(_consumer);
-        require(!isConsumerRegistered, "Consumer should not be a registered entity");
-        
-        // Mark this address as a consumer address
-        consumerAddresses[_consumer] = true;
-        
-        // Add processing record
-        addProcessingRecord(_diamondID, string(abi.encodePacked(
-            "Sold to consumer ", addressToString(_consumer), 
-            " by retailer ", addressToString(msg.sender)
-        )));
-        
-        // Transfer the NFT directly - bypassing entity validation
-        safeTransferFrom(msg.sender, _consumer, _diamondID);
-        
-        emit DiamondTransferredToConsumer(_diamondID, msg.sender, _consumer);
+        emit DiamondRegistered(diamondId, msg.sender, origin, weight);
+        return diamondId;
     }
     
-    // Function for diamond transfers between consumers
-    function transferBetweenConsumers(uint256 _diamondID, address _toConsumer) external {
-        //use ERC721Enumerable to check if token exists
-        require(_diamondID <= _tokenIDs.current() && _diamondID > 0, "Diamond does not exist");
-        require(ownerOf(_diamondID) == msg.sender, "Only the current owner can transfer");
-        
-        // Verify consumer is not a registered entity
-        (,,bool isConsumerRegistered,,) = entityContract.getEntityInfo(_toConsumer);
-        require(!isConsumerRegistered, "Recipient should not be a registered entity");
-        
-        // Mark this address as a consumer address
-        consumerAddresses[_toConsumer] = true;
-        
-        // Add processing record
-        addProcessingRecord(_diamondID, string(abi.encodePacked(
-            "Transferred from consumer ", addressToString(msg.sender), 
-            " to consumer ", addressToString(_toConsumer)
-        )));
-        
-        // Transfer the NFT directly
-        safeTransferFrom(msg.sender, _toConsumer, _diamondID);
-        
-        emit DiamondTransferredBetweenConsumers(_diamondID, msg.sender, _toConsumer);
-    }
-    
-    // Check if an address is a consumer address
-    function isConsumer(address _address) external view returns (bool) {
-        return consumerAddresses[_address];
-    }
-
+    /**
+     * @dev Process a raw diamond into a cut/polished diamond (manufacturers only)
+     */
     function processDiamond(
-        uint256 _rawDiamondID,
-        uint256 _weight,
-        string memory _characteristics
+        uint256 rawDiamondId,
+        uint256 weight,
+        string calldata characteristics
     ) external returns (uint256) {
-        //use ERC721Enumerable to check if token exists
-        require(_rawDiamondID <= _tokenIDs.current() && _rawDiamondID > 0, "Raw diamond does not exist");
-        require(ownerOf(_rawDiamondID) == msg.sender, "Only the current owner can process");
+        // Validate
+        require(_exists(rawDiamondId), "Raw diamond does not exist");
+        require(ownerOf(rawDiamondId) == msg.sender, "You don't own this diamond");
+        require(_hasRole(msg.sender, "Manufacturer"), "Only manufacturers can process diamonds");
         
-        // Verify caller is a registered manufacturer
-        (,,bool isRegistered,,string memory role) = entityContract.getEntityInfo(msg.sender);
-        require(isRegistered, "Caller is not a registered entity");
-        require(keccak256(abi.encodePacked(role)) == keccak256(abi.encodePacked("Manufacturer")), 
-            "Only manufacturers can process diamonds");
+        // Get new diamond ID
+        _tokenIds.increment();
+        uint256 newDiamondId = _tokenIds.current();
         
-        // Increment and get the new token ID
-        _tokenIDs.increment();
-        uint256 newDiamondID = _tokenIDs.current();
-        
-        // Create empty array for processing history
-        string[] memory processingHistory = new string[](0);
-        
-        // Store the processed diamond information
-        diamonds[newDiamondID] = Diamond({
-            id: newDiamondID,
-            origin: diamonds[_rawDiamondID].origin, // Inherit origin from raw diamond
-            extractionDate: diamonds[_rawDiamondID].extractionDate, // Inherit extraction date
-            weight: _weight,
-            characteristics: _characteristics,
+        // Create processed diamond
+        _diamonds[newDiamondId] = Diamond({
+            origin: _diamonds[rawDiamondId].origin,
+            extractionDate: _diamonds[rawDiamondId].extractionDate,
+            weight: weight,
+            characteristics: characteristics,
             isCertified: false,
             certificationID: "",
-            processingHistory: processingHistory,
-            rawDiamondID: _rawDiamondID // Link to original raw diamond
+            rawDiamondID: rawDiamondId
         });
         
-        // Mint the NFT to the manufacturer
-        _safeMint(msg.sender, newDiamondID);
+        // Mint NFT
+        _safeMint(msg.sender, newDiamondId);
         
-        // Add processing record
-        addProcessingRecord(newDiamondID, string(abi.encodePacked(
-            "Processed from raw diamond #", uint256ToString(_rawDiamondID),
-            " by manufacturer ", addressToString(msg.sender)
-        )));
+        // Add history record
+        _addHistoryRecord(
+            newDiamondId, 
+            "PROCESSED", 
+            msg.sender, 
+            string(abi.encodePacked("From raw diamond #", _uint256ToString(rawDiamondId)))
+        );
         
-        // Track processed diamonds from the raw diamond
-        processedDiamonds[_rawDiamondID].push(newDiamondID);
+        // Track processed diamonds
+        _processedDiamonds[rawDiamondId].push(newDiamondId);
         
-        emit DiamondProcessed(_rawDiamondID, newDiamondID, msg.sender);
-        
-        return newDiamondID;
+        emit DiamondProcessed(rawDiamondId, newDiamondId, msg.sender);
+        return newDiamondId;
     }
-
-    //function to certify diamond (only certifiers can call this)
+    
+    /**
+     * @dev Certify a diamond (certifiers only)
+     */
     function certifyDiamond(
-        uint256 _diamondID,
-        string memory _certificationID,
-        string memory _characteristics
+        uint256 diamondId,
+        string calldata certificationId
     ) external {
-        //use ERC721Enumerable to check if token exists
-        require(_diamondID <= _tokenIDs.current() && _diamondID > 0, "Diamond does not exist");
-        require(ownerOf(_diamondID) == msg.sender, "Only the current owner can certify");
+        // Validate
+        require(_exists(diamondId), "Diamond does not exist");
+        require(ownerOf(diamondId) == msg.sender, "You don't own this diamond");
+        require(_hasRole(msg.sender, "Certifier"), "Only certifiers can certify diamonds");
         
-        // Verify caller is a registered certifier
-        (,,bool isRegistered,,string memory role) = entityContract.getEntityInfo(msg.sender);
-        require(isRegistered, "Caller is not a registered entity");
-        require(keccak256(abi.encodePacked(role)) == keccak256(abi.encodePacked("Certifier")), 
-            "Only certifiers can certify diamonds");
+        // Update diamond
+        _diamonds[diamondId].isCertified = true;
+        _diamonds[diamondId].certificationID = certificationId;
         
-        // Update diamond certification
-        diamonds[_diamondID].isCertified = true;
-        diamonds[_diamondID].certificationID = _certificationID;
-        diamonds[_diamondID].characteristics = _characteristics; // Update with certified characteristics
+        // Add history record
+        _addHistoryRecord(
+            diamondId, 
+            "CERTIFIED", 
+            msg.sender, 
+            string(abi.encodePacked("Certification ID: ", certificationId))
+        );
         
-        // Add certification record
-        addProcessingRecord(_diamondID, string(abi.encodePacked(
-            "Certified with ID ", _certificationID,
-            " by certifier ", addressToString(msg.sender)
-        )));
-        
-        emit DiamondCertified(_diamondID, _certificationID, msg.sender);
+        emit DiamondCertified(diamondId, certificationId, msg.sender);
     }
-
-    function addProcessingRecord(uint256 _diamondID, string memory _processingDetail) public {
-        //use ERC721Enumerable to check if token exists
-        require(_diamondID <= _tokenIDs.current() && _diamondID > 0, "Diamond does not exist");
-        require(ownerOf(_diamondID) == msg.sender, "Only the current owner can add records");
+    
+    /**
+     * @dev Unified transfer function for all transfer types
+     */
+    function transferDiamond(uint256 diamondId, address to) external {
+        // Validate basic conditions
+        require(_exists(diamondId), "Diamond does not exist");
+        require(ownerOf(diamondId) == msg.sender, "You don't own this diamond");
+        require(to != address(0), "Cannot transfer to zero address");
         
-        // Add the processing record with timestamp
-        string memory recordWithTimestamp = string(abi.encodePacked(
-            uint256ToString(block.timestamp),
-            ": ",
-            _processingDetail
-        ));
+        // Determine sender and receiver status
+        (bool senderRegistered, string memory senderRole) = _getEntityInfo(msg.sender);
+        (bool receiverRegistered, string memory receiverRole) = _getEntityInfo(to);
         
-        diamonds[_diamondID].processingHistory.push(recordWithTimestamp);
+        string memory transferType;
+        string memory details;
         
-        emit ProcessingRecordAdded(_diamondID, _processingDetail);
+        // Handle different transfer scenarios
+        if (senderRegistered && receiverRegistered) {
+            // Entity to Entity transfer
+            require(_entityContract.validateTransfer(msg.sender, to), "Invalid transfer between entities");
+            transferType = "ENTITY_TO_ENTITY";
+            details = string(abi.encodePacked(
+                "From: ", senderRole, " to ", receiverRole
+            ));
+        }
+        else if (senderRegistered && !receiverRegistered) {
+            // Retailer to Consumer transfer
+            require(
+                keccak256(abi.encodePacked(senderRole)) == keccak256(abi.encodePacked("Retailer")), 
+                "Only retailers can transfer to consumers"
+            );
+            transferType = "RETAIL_SALE";
+            details = "First consumer sale";
+            
+            // Mark as in consumer market
+            _inConsumerMarket[diamondId] = true;
+        }
+        else if (!senderRegistered && !receiverRegistered) {
+            // Consumer to Consumer transfer
+            require(_inConsumerMarket[diamondId], "This diamond has not entered the consumer market");
+            transferType = "SECONDARY_SALE";
+            details = "Consumer resale";
+        }
+        else {
+            revert("Consumers cannot transfer back to registered entities");
+        }
+        
+        // Add history record
+        _addHistoryRecord(diamondId, transferType, msg.sender, details);
+        
+        // Transfer NFT
+        safeTransferFrom(msg.sender, to, diamondId);
+        
+        emit DiamondTransferred(diamondId, msg.sender, to, transferType);
     }
-
-    //function to get all diamond information
-    function getDiamondInfo(uint256 _diamondID) external view returns (
-        uint256 id,
-        address currentOwner,
+    
+    // ====== View Functions (Getters) ======
+    
+    /**
+     * @dev Get basic diamond information
+     */
+    function getDiamondBasicInfo(uint256 diamondId) external view returns (
         string memory origin,
         uint256 extractionDate,
         uint256 weight,
-        string memory characteristics,
-        string memory certificationID,
-        uint256 rawDiamondID
+        string memory characteristics
     ) {
-        //use ERC721Enumerable to check if token exists
-        require(_diamondID <= _tokenIDs.current() && _diamondID > 0, "Diamond does not exist");
+        require(_exists(diamondId), "Diamond does not exist");
         
-        Diamond storage diamond = diamonds[_diamondID];
-        address owner = ownerOf(_diamondID);
-        
+        Diamond storage diamond = _diamonds[diamondId];
         return (
-            diamond.id,
-            owner,
             diamond.origin,
             diamond.extractionDate,
             diamond.weight,
-            diamond.characteristics,
+            diamond.characteristics
+        );
+    }
+    
+    /**
+     * @dev Get diamond certification information
+     */
+    function getDiamondCertInfo(uint256 diamondId) external view returns (
+        bool isCertified,
+        string memory certificationId,
+        uint256 rawDiamondId
+    ) {
+        require(_exists(diamondId), "Diamond does not exist");
+        
+        Diamond storage diamond = _diamonds[diamondId];
+        return (
+            diamond.isCertified,
             diamond.certificationID,
             diamond.rawDiamondID
         );
     }
-
-    //function to get all history of diamond, processing etc
-    function getDiamondHistory(uint256 _diamondID) external view returns (string[] memory) {
-        //use ERC721Enumerable to check if token exists
-        require(_diamondID <= _tokenIDs.current() && _diamondID > 0, "Diamond does not exist");
-        return diamonds[_diamondID].processingHistory;
-    }
-
-    function tokenURI(uint256 tokenID) public view override returns (string memory) {
-        // Fix: Use ERC721Enumerable's method for checking if token exists
-        require(tokenID <= _tokenIDs.current() && tokenID > 0, "ERC721Metadata: URI query for nonexistent token");
+    
+    /**
+     * @dev Get diamond ownership information
+     */
+    function getDiamondOwnershipInfo(uint256 diamondId) external view returns (
+        address currentOwner
+    ) {
+        require(_exists(diamondId), "Diamond does not exist");
         
-        // This can be extended to return detailed JSON metadata or link to IPFS
-        return string(abi.encodePacked("https://diamond-provenance.example/token/", uint256ToString(tokenID)));
+        return (
+            ownerOf(diamondId)
+        );
     }
-
-    function addressToString(address _addr) internal pure returns (string memory) {
-        bytes32 value = bytes32(uint256(uint160(_addr)));
+    
+    /**
+     * @dev Get diamond history
+     */
+    function getDiamondHistory(uint256 diamondId) external view returns (string[] memory) {
+        require(_exists(diamondId), "Diamond does not exist");
+        return _diamondHistory[diamondId];
+    }
+    
+    /**
+     * @dev Get processed diamonds from a raw diamond
+     */
+    function getProcessedDiamonds(uint256 rawDiamondId) external view returns (uint256[] memory) {
+        require(_exists(rawDiamondId), "Diamond does not exist");
+        return _processedDiamonds[rawDiamondId];
+    }
+    
+    /**
+     * @dev Check if an address has a specific role
+     */
+    function hasRole(address account, string calldata role) external view returns (bool) {
+        return _hasRole(account, role);
+    }
+    
+   
+    // ====== Internal Helper Functions ======
+    
+    /**
+     * @dev Check if an address has a specific role
+     */
+    function _hasRole(address account, string memory role) internal view returns (bool) {
+        (bool registered, string memory entityRole) = _getEntityInfo(account);
+        return registered && keccak256(abi.encodePacked(entityRole)) == keccak256(abi.encodePacked(role));
+    }
+    
+    /**
+     * @dev Get entity information
+     */
+    function _getEntityInfo(address account) internal view returns (bool registered, string memory role) {
+        (,, registered,, role) = _entityContract.getEntityInfo(account);
+        return (registered, role);
+    }
+    
+    /**
+     * @dev Add a history record for a diamond
+     */
+    function _addHistoryRecord(
+        uint256 diamondId, 
+        string memory action, 
+        address actor, 
+        string memory details
+    ) internal {
+        string memory timestamp = _uint256ToString(block.timestamp);
+        string memory record = string(abi.encodePacked(
+            timestamp, " | ", 
+            action, " | ", 
+            _addressToString(actor), " | ", 
+            details
+        ));
+        
+        _diamondHistory[diamondId].push(record);
+        emit HistoryRecordAdded(diamondId, record);
+    }
+    
+    /**
+     * @dev Convert address to string
+     */
+    function _addressToString(address addr) internal pure returns (string memory) {
+        bytes32 value = bytes32(uint256(uint160(addr)));
         bytes memory alphabet = "0123456789abcdef";
         
         bytes memory str = new bytes(42);
@@ -379,8 +397,11 @@ contract ProvenanceContract is ERC721Enumerable, Ownable {
         
         return string(str);
     }
-
-    function uint256ToString(uint256 value) internal pure returns (string memory) {
+    
+    /**
+     * @dev Convert uint256 to string
+     */
+    function _uint256ToString(uint256 value) internal pure returns (string memory) {
         if (value == 0) {
             return "0";
         }
@@ -402,6 +423,13 @@ contract ProvenanceContract is ERC721Enumerable, Ownable {
         }
         
         return string(buffer);
+    }
+    
+    /**
+     * @dev Check if a token exists
+     */
+    function _exists(uint256 tokenId) internal view returns (bool) {
+        return tokenId > 0 && tokenId <= _tokenIds.current();
     }
 }
    

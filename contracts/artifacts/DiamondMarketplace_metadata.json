@@ -9,7 +9,7 @@
 				"inputs": [
 					{
 						"internalType": "address",
-						"name": "provenanceContractAddress",
+						"name": "provenanceAddress",
 						"type": "address"
 					}
 				],
@@ -44,6 +44,12 @@
 					{
 						"indexed": true,
 						"internalType": "uint256",
+						"name": "listingId",
+						"type": "uint256"
+					},
+					{
+						"indexed": true,
+						"internalType": "uint256",
 						"name": "diamondId",
 						"type": "uint256"
 					},
@@ -54,38 +60,13 @@
 						"type": "address"
 					},
 					{
-						"indexed": true,
-						"internalType": "address",
-						"name": "buyer",
-						"type": "address"
-					},
-					{
 						"indexed": false,
 						"internalType": "uint256",
 						"name": "price",
 						"type": "uint256"
 					}
 				],
-				"name": "ConsumerSale",
-				"type": "event"
-			},
-			{
-				"anonymous": false,
-				"inputs": [
-					{
-						"indexed": true,
-						"internalType": "uint256",
-						"name": "diamondId",
-						"type": "uint256"
-					},
-					{
-						"indexed": true,
-						"internalType": "address",
-						"name": "recoveredBy",
-						"type": "address"
-					}
-				],
-				"name": "DiamondRecovered",
+				"name": "DiamondListed",
 				"type": "event"
 			},
 			{
@@ -111,6 +92,62 @@
 					}
 				],
 				"name": "DiamondReportedStolen",
+				"type": "event"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": true,
+						"internalType": "uint256",
+						"name": "listingId",
+						"type": "uint256"
+					},
+					{
+						"indexed": true,
+						"internalType": "uint256",
+						"name": "diamondId",
+						"type": "uint256"
+					},
+					{
+						"indexed": true,
+						"internalType": "address",
+						"name": "buyer",
+						"type": "address"
+					},
+					{
+						"indexed": false,
+						"internalType": "uint256",
+						"name": "price",
+						"type": "uint256"
+					}
+				],
+				"name": "DiamondSold",
+				"type": "event"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": true,
+						"internalType": "uint256",
+						"name": "listingId",
+						"type": "uint256"
+					},
+					{
+						"indexed": true,
+						"internalType": "uint256",
+						"name": "diamondId",
+						"type": "uint256"
+					},
+					{
+						"indexed": true,
+						"internalType": "address",
+						"name": "seller",
+						"type": "address"
+					}
+				],
+				"name": "ListingCancelled",
 				"type": "event"
 			},
 			{
@@ -144,45 +181,50 @@
 					{
 						"indexed": true,
 						"internalType": "address",
-						"name": "retailer",
+						"name": "resolver",
 						"type": "address"
-					},
-					{
-						"indexed": true,
-						"internalType": "address",
-						"name": "consumer",
-						"type": "address"
-					},
-					{
-						"indexed": false,
-						"internalType": "uint256",
-						"name": "price",
-						"type": "uint256"
 					}
 				],
-				"name": "RetailSale",
+				"name": "StolenReportResolved",
 				"type": "event"
-			},
-			{
-				"stateMutability": "payable",
-				"type": "fallback"
 			},
 			{
 				"inputs": [
 					{
 						"internalType": "uint256",
-						"name": "diamondId",
+						"name": "listingId",
 						"type": "uint256"
-					},
-					{
-						"internalType": "address",
-						"name": "buyer",
-						"type": "address"
 					}
 				],
-				"name": "consumerSale",
+				"name": "buyDiamond",
 				"outputs": [],
 				"stateMutability": "payable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "listingId",
+						"type": "uint256"
+					}
+				],
+				"name": "cancelListing",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "getActiveListings",
+				"outputs": [
+					{
+						"internalType": "uint256[]",
+						"name": "",
+						"type": "uint256[]"
+					}
+				],
+				"stateMutability": "view",
 				"type": "function"
 			},
 			{
@@ -193,8 +235,28 @@
 						"type": "uint256"
 					}
 				],
-				"name": "getDiamondInfo",
+				"name": "getDiamondDetails",
 				"outputs": [
+					{
+						"internalType": "address",
+						"name": "currentOwner",
+						"type": "address"
+					},
+					{
+						"internalType": "bool",
+						"name": "isListed",
+						"type": "bool"
+					},
+					{
+						"internalType": "uint256",
+						"name": "listingPrice",
+						"type": "uint256"
+					},
+					{
+						"internalType": "bool",
+						"name": "isReportedStolen",
+						"type": "bool"
+					},
 					{
 						"internalType": "string",
 						"name": "origin",
@@ -202,18 +264,8 @@
 					},
 					{
 						"internalType": "uint256",
-						"name": "extractionDate",
-						"type": "uint256"
-					},
-					{
-						"internalType": "uint256",
 						"name": "weight",
 						"type": "uint256"
-					},
-					{
-						"internalType": "string",
-						"name": "characteristics",
-						"type": "string"
 					},
 					{
 						"internalType": "bool",
@@ -224,31 +276,45 @@
 						"internalType": "string",
 						"name": "certificationId",
 						"type": "string"
-					},
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
 					{
 						"internalType": "uint256",
-						"name": "rawDiamondId",
+						"name": "listingId",
+						"type": "uint256"
+					}
+				],
+				"name": "getListingDetails",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "diamondId",
 						"type": "uint256"
 					},
 					{
 						"internalType": "address",
-						"name": "currentOwner",
+						"name": "seller",
 						"type": "address"
+					},
+					{
+						"internalType": "uint256",
+						"name": "price",
+						"type": "uint256"
 					},
 					{
 						"internalType": "bool",
-						"name": "isStolen",
+						"name": "active",
 						"type": "bool"
 					},
 					{
-						"internalType": "address",
-						"name": "reportedBy",
-						"type": "address"
-					},
-					{
-						"internalType": "string",
-						"name": "theftDetails",
-						"type": "string"
+						"internalType": "uint256",
+						"name": "listedAt",
+						"type": "uint256"
 					}
 				],
 				"stateMutability": "view",
@@ -262,25 +328,67 @@
 						"type": "uint256"
 					}
 				],
-				"name": "getStolenStatus",
+				"name": "getStolenReports",
 				"outputs": [
 					{
-						"internalType": "bool",
-						"name": "isStolen",
-						"type": "bool"
+						"internalType": "address[]",
+						"name": "reporters",
+						"type": "address[]"
 					},
 					{
-						"internalType": "address",
-						"name": "reportedBy",
-						"type": "address"
+						"internalType": "uint256[]",
+						"name": "reportTimes",
+						"type": "uint256[]"
 					},
 					{
-						"internalType": "string",
+						"internalType": "string[]",
 						"name": "details",
-						"type": "string"
+						"type": "string[]"
+					},
+					{
+						"internalType": "bool[]",
+						"name": "resolved",
+						"type": "bool[]"
 					}
 				],
 				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "diamondId",
+						"type": "uint256"
+					}
+				],
+				"name": "isDiamondStolen",
+				"outputs": [
+					{
+						"internalType": "bool",
+						"name": "",
+						"type": "bool"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "diamondId",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "price",
+						"type": "uint256"
+					}
+				],
+				"name": "listDiamond",
+				"outputs": [],
+				"stateMutability": "nonpayable",
 				"type": "function"
 			},
 			{
@@ -294,37 +402,6 @@
 					}
 				],
 				"stateMutability": "view",
-				"type": "function"
-			},
-			{
-				"inputs": [],
-				"name": "provenanceContract",
-				"outputs": [
-					{
-						"internalType": "contract Provenance",
-						"name": "",
-						"type": "address"
-					}
-				],
-				"stateMutability": "view",
-				"type": "function"
-			},
-			{
-				"inputs": [
-					{
-						"internalType": "uint256",
-						"name": "diamondId",
-						"type": "uint256"
-					},
-					{
-						"internalType": "address",
-						"name": "rightfulOwner",
-						"type": "address"
-					}
-				],
-				"name": "recoverStolen",
-				"outputs": [],
-				"stateMutability": "nonpayable",
 				"type": "function"
 			},
 			{
@@ -347,7 +424,20 @@
 						"type": "string"
 					}
 				],
-				"name": "reportStolen",
+				"name": "reportStolenDiamond",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "diamondId",
+						"type": "uint256"
+					}
+				],
+				"name": "resolveReport",
 				"outputs": [],
 				"stateMutability": "nonpayable",
 				"type": "function"
@@ -381,42 +471,72 @@
 			},
 			"kind": "dev",
 			"methods": {
-				"consumerSale(uint256,address)": {
-					"details": "Consumer sells diamond to another consumer - simplified version",
+				"buyDiamond(uint256)": {
+					"details": "Buy a listed diamond",
 					"params": {
-						"buyer": "The address of the buyer",
-						"diamondId": "The ID of the diamond being sold"
+						"listingId": "The ID of the listing to purchase"
 					}
 				},
-				"getStolenStatus(uint256)": {
-					"details": "Check if a diamond is reported stolen",
+				"cancelListing(uint256)": {
+					"details": "Cancel a listing",
 					"params": {
-						"diamondId": "The ID of the diamond to check"
-					},
+						"listingId": "The ID of the listing to cancel"
+					}
+				},
+				"getActiveListings()": {
+					"details": "Get all active listings",
 					"returns": {
-						"details": "Details about the theft",
-						"isStolen": "Whether the diamond is marked as stolen",
-						"reportedBy": "Address that reported the theft"
+						"_0": "Array of listing IDs"
+					}
+				},
+				"getDiamondDetails(uint256)": {
+					"details": "Get details about a specific diamond and its listing",
+					"params": {
+						"diamondId": "The ID of the diamond"
+					}
+				},
+				"getListingDetails(uint256)": {
+					"details": "Get listing details",
+					"params": {
+						"listingId": "The ID of the listing"
+					}
+				},
+				"getStolenReports(uint256)": {
+					"details": "Get all stolen reports for a diamond",
+					"params": {
+						"diamondId": "The ID of the diamond"
+					}
+				},
+				"isDiamondStolen(uint256)": {
+					"details": "Check if a diamond is currently reported as stolen",
+					"params": {
+						"diamondId": "The ID of the diamond"
+					}
+				},
+				"listDiamond(uint256,uint256)": {
+					"details": "List a diamond for sale in the marketplace",
+					"params": {
+						"diamondId": "The ID of the diamond NFT to list",
+						"price": "The asking price in wei"
 					}
 				},
 				"owner()": {
 					"details": "Returns the address of the current owner."
 				},
-				"recoverStolen(uint256,address)": {
-					"details": "Recovery of a stolen diamond (only callable by owner of contract, e.g., law enforcement)",
-					"params": {
-						"diamondId": "The ID of the diamond to recover",
-						"rightfulOwner": "The address of the rightful owner"
-					}
-				},
 				"renounceOwnership()": {
 					"details": "Leaves the contract without owner. It will not be possible to call `onlyOwner` functions. Can only be called by the current owner. NOTE: Renouncing ownership will leave the contract without an owner, thereby disabling any functionality that is only available to the owner."
 				},
-				"reportStolen(uint256,string)": {
-					"details": "Report a diamond as stolen",
+				"reportStolenDiamond(uint256,string)": {
+					"details": "Report a diamond as stolen or lost",
 					"params": {
-						"details": "Additional details about the theft",
+						"details": "Details about the theft or loss",
 						"diamondId": "The ID of the diamond to report"
+					}
+				},
+				"resolveReport(uint256)": {
+					"details": "Resolve a stolen report (only for administrators)",
+					"params": {
+						"diamondId": "The ID of the diamond to mark as resolved"
 					}
 				},
 				"transferOwnership(address)": {
@@ -433,7 +553,7 @@
 	},
 	"settings": {
 		"compilationTarget": {
-			"contracts/MarketplaceContract.sol": "MarketplaceContract"
+			"contracts/MarketplaceContract.sol": "DiamondMarketplace"
 		},
 		"evmVersion": "cancun",
 		"libraries": {},
@@ -600,11 +720,11 @@
 			]
 		},
 		"contracts/MarketplaceContract.sol": {
-			"keccak256": "0xf29cfb7ea02d4d55076f9f980c3d9a2c0db4e6eaa2c523220fe572c88ecc0946",
+			"keccak256": "0x0beb880bc2779fc7535656b80d2574bfe27d734a2f78e9af7448ec73ce0a9c91",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://550b4ef5b557ab7be6d363c1e8dbd9ddb8ba8c045c375419cf2a34aac7abb401",
-				"dweb:/ipfs/QmVfizKazNyzM62xZJvqJoFraZvbQc3bdQ7WdseRMyqEBU"
+				"bzz-raw://7321907e8950e561044439c6847d369f784a90c40963495cb20b0a9e94142879",
+				"dweb:/ipfs/QmWDphQwH3Gc8NJjbBPGQ5AP8dYxRVwF4RaCzdXB65voEd"
 			]
 		},
 		"contracts/ProvenanceContract.sol": {
