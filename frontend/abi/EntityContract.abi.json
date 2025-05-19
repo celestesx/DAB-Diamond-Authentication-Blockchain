@@ -1,0 +1,223 @@
+[
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "entityAddress",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "string",
+				"name": "name",
+				"type": "string"
+			},
+			{
+				"indexed": false,
+				"internalType": "string",
+				"name": "role",
+				"type": "string"
+			},
+			{
+				"indexed": false,
+				"internalType": "string",
+				"name": "licenseNumber",
+				"type": "string"
+			}
+		],
+		"name": "EntityRegistered",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": false,
+				"internalType": "string",
+				"name": "name",
+				"type": "string"
+			},
+			{
+				"indexed": false,
+				"internalType": "string",
+				"name": "location",
+				"type": "string"
+			},
+			{
+				"indexed": false,
+				"internalType": "string",
+				"name": "reason",
+				"type": "string"
+			}
+		],
+		"name": "RegistrationRejected",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": false,
+				"internalType": "address",
+				"name": "from",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "address",
+				"name": "to",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "bool",
+				"name": "isValid",
+				"type": "bool"
+			},
+			{
+				"indexed": false,
+				"internalType": "string",
+				"name": "message",
+				"type": "string"
+			}
+		],
+		"name": "TransferValidation",
+		"type": "event"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "string",
+				"name": "_role",
+				"type": "string"
+			}
+		],
+		"name": "getEntitiesByRole",
+		"outputs": [
+			{
+				"internalType": "address[]",
+				"name": "",
+				"type": "address[]"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "_entityAddress",
+				"type": "address"
+			}
+		],
+		"name": "getEntityInfo",
+		"outputs": [
+			{
+				"internalType": "string",
+				"name": "name",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "location",
+				"type": "string"
+			},
+			{
+				"internalType": "bool",
+				"name": "isRegistered",
+				"type": "bool"
+			},
+			{
+				"internalType": "string",
+				"name": "licenseNumber",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "role",
+				"type": "string"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "_from",
+				"type": "address"
+			},
+			{
+				"internalType": "address",
+				"name": "_to",
+				"type": "address"
+			}
+		],
+		"name": "isValidTransfer",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "string",
+				"name": "_name",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "_location",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "_role",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "_licenseNumber",
+				"type": "string"
+			}
+		],
+		"name": "registerEntity",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "_from",
+				"type": "address"
+			},
+			{
+				"internalType": "address",
+				"name": "_to",
+				"type": "address"
+			}
+		],
+		"name": "validateTransfer",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	}
+]

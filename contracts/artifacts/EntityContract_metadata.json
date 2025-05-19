@@ -255,11 +255,11 @@
 	},
 	"sources": {
 		"contracts/EntityContract.sol": {
-			"keccak256": "0xac3a4577e71f2e212f1eeeaca39727b2388ceacbbb53031a6a4ee0635d02fa91",
+			"keccak256": "0x2cd5cd65fc1819658f4f24b4c5b8bf953619e40daff8be6c79860cd458dd7ab2",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://9426fc978bac3caebd1ac3da6973441afd21b68f5488a2f54d9988e0fda28094",
-				"dweb:/ipfs/QmTNPMEWcz5r8wWNj7v3Dec22ZvUxwrpv41ro6j17ix85j"
+				"bzz-raw://37bf556dbecf5b77a5c759dbbb5354c445eabc07f4bfa5f31ba84ea59e32ae4b",
+				"dweb:/ipfs/QmUHWZCqdCdAwmSNkXoeDD5ceoooG79ovtZWtKnAQbizkn"
 			]
 		}
 	},
