@@ -1553,8 +1553,17 @@
         showStatus("Sending transaction...");
         const tx = await contract.registerRawDiamond(origin, extractionDate, weight, characteristics);
         showStatus(`Transaction sent: ${tx.hash}`);
-        await tx.wait();
-        showStatus("Diamond registered successfully.");
+        const receipt = await tx.wait();
+
+        // Extract the diamond ID from the DiamondRegistered event
+        const event = receipt.events.find(e => e.event === "DiamondRegistered");
+        if (event) {
+        const diamondId = event.args.diamondId.toString();
+        showStatus(`Diamond registered successfully! ID: ${diamondId}`);
+        } else {
+        showStatus("Diamond registered, but ID not found in logs.");
+        }
+
         registerForm.reset();
       } catch (err) {
         console.error(err);
@@ -1568,7 +1577,8 @@
 
     // Event Listeners
     connectWalletBtn.addEventListener("click", connectWallet);
-    registerForm?.addEventListener("submit", handleRegister);
+  
+    registerForm.addEventListener("submit", handleRegister);
   };
 </script> 
 
