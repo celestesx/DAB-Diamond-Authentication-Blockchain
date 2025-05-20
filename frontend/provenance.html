@@ -122,7 +122,6 @@
 <script>
   window.onload = async function () {
     const statusMessageDiv = document.getElementById("statusMessage");
-    console.log("Status message element:", statusMessageDiv); // Debug 
     const provenanceContractAddress = "0x69cB786e5d8747A22b28051616aA58875baf7C8d";
     const entityContractAddress = "0x69cB786e5d8747A22b28051616aA58875baf7C8d";
     const entityContractABI = [
@@ -1454,8 +1453,6 @@
     const connectWalletBtn = document.getElementById("connectWalletBtn");
     const accountAddressSpan = document.getElementById("accountAddress");
     const networkNameSpan = document.getElementById("networkName");
- 
-
     const registerForm = document.getElementById("registerRawDiamondForm");
 
     const processForm = document.getElementById("processDiamondForm");
@@ -1485,8 +1482,10 @@
         signer = provider.getSigner();
         contract = new ethers.Contract(provenanceContractAddress, provenanceABI, signer);
         entityContract = new ethers.Contract(entityContractAddress, entityContractABI, signer);
-        accountAddressSpan.textContent = address;
+
         const address = await signer.getAddress();
+        accountAddressSpan.textContent = address;
+        
         if (!ethers.utils.isAddress(address)) {
             showStatus("Invalid Ethereum address.", true);
             return;
@@ -1529,20 +1528,7 @@
       connectWallet(); // Reconnect silently if already connected
     }
 
-    // async function handleRegister(event) {
-    //   event.preventDefault();
-    //   const origin = document.getElementById("origin").value;
-    //   const date = parseInt(document.getElementById("extractionDate").value);
-    //   const weight = parseFloat(document.getElementById("weight").value);
-    //   const characteristics = document.getElementById("characteristics").value;
-    //   try {
-    //     const tx = await contract.registerRawDiamond(origin, date, weight, characteristics);
-    //     await tx.wait();
-    //     showStatus("Raw diamond registered!");
-    //   } catch (err) {
-    //     showStatus("Register failed: " + err.message, true);
-    //   }
-    // }
+
     async function handleRegister(event) {
   event.preventDefault();
   clearStatus();
