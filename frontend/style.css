@@ -360,7 +360,7 @@ select {
 }
 
 .cta-button {
-  background-color: #4f46e5;
+  background-color: #3b82f6;
   color: #fff;
   padding: 0.75rem 1.25rem;
   border: none;
@@ -371,7 +371,7 @@ select {
 }
 
 .cta-button:hover {
-  background-color: #4338ca;
+  background-color: #2563eb;
 }
 
 /* Wallet Status section centered at the top */

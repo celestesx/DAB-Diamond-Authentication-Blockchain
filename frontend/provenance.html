@@ -124,7 +124,7 @@
     const statusMessageDiv = document.getElementById("statusMessage");
     console.log("Status message element:", statusMessageDiv); // Debug 
     const provenanceContractAddress = "0x69cB786e5d8747A22b28051616aA58875baf7C8d";
-    const entityContractAddress = "0x79b894aC8CB20FD53Fd5095a047F54f9E3450253";
+    const entityContractAddress = "0x69cB786e5d8747A22b28051616aA58875baf7C8d";
     const provenanceABI = [
         {
           "inputs": [
@@ -1357,15 +1357,19 @@
         provider = new ethers.providers.Web3Provider(window.ethereum);
         signer = provider.getSigner();
         contract = new ethers.Contract(provenanceContractAddress, provenanceABI, signer);
-        entityContract = new ethers.Contract(entityContractAddress, entityABI, signer);
+        entityContract = new ethers.Contract(entityContractAddress, entityContractABI, signer);
 
         const address = await signer.getAddress();
-        accountAddressSpan.textContent = address;
+        if (!ethers.utils.isAddress(address)) {
+            showStatus("Invalid Ethereum address.", true);
+            return;
+            }
+        const [, , isRegistered, , role] = await entityContract.getEntityInfo(address);
 
         const network = await provider.getNetwork();
         networkNameSpan.textContent = `${network.name} (Chain ID: ${network.chainId})`;
 
-        const [, , isRegistered, , role] = await entityContract.getEntityInfo(address);
+        
 
         if (!isRegistered) {
           showStatus("Not registered in the EntityContract. Please register first.", true);
