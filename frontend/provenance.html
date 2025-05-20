@@ -1379,6 +1379,11 @@
       }
     }
 
+    const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+    if (accounts.length > 0) {
+      connectWallet(); // Reconnect silently if already connected
+    }
+
     async function handleRegister(event) {
       event.preventDefault();
       const origin = document.getElementById("origin").value;
