@@ -122,6 +122,18 @@
 <script>
   window.onload = async function () {
     const statusMessageDiv = document.getElementById("statusMessage");
+    function showStatus(msg, isError = false) {
+      statusMessageDiv.textContent = msg;
+      statusMessageDiv.className = isError ? "status-error" : "status-success";
+      statusMessageDiv.classList.remove("hidden");
+      console.log(msg);
+    }
+
+    function clearStatus() {
+      statusMessageDiv.textContent = "";
+      statusMessageDiv.classList.add("hidden");
+    }
+
     const provenanceContractAddress = "0x69cB786e5d8747A22b28051616aA58875baf7C8d";
     const entityContractAddress = "0x69cB786e5d8747A22b28051616aA58875baf7C8d";
     const entityContractABI = [
@@ -1459,12 +1471,7 @@
     const certifyForm = document.getElementById("certifyDiamondForm");
     const transferForm = document.getElementById("transferDiamondForm");
 
-    function showStatus(msg, isError = false) {
-      statusMessageDiv.textContent = msg;
-      statusMessageDiv.className = isError ? "status-error" : "status-success";
-      statusMessageDiv.classList.remove("hidden");
-      console.log(msg);
-    }
+ 
 
     function hideAllForms() {
       registerForm?.classList.add("hidden");
@@ -1474,28 +1481,30 @@
     }
 
     async function connectWallet() {
-      if (!window.ethereum) return showStatus("MetaMask not found.", true);
-
       try {
+        if (!window.ethereum) return showStatus("MetaMask not found.", true);
+
         await window.ethereum.request({ method: "eth_requestAccounts" });
+
         provider = new ethers.providers.Web3Provider(window.ethereum);
         signer = provider.getSigner();
-        contract = new ethers.Contract(provenanceContractAddress, provenanceABI, signer);
-        entityContract = new ethers.Contract(entityContractAddress, entityContractABI, signer);
 
         const address = await signer.getAddress();
         accountAddressSpan.textContent = address;
-        
+
         if (!ethers.utils.isAddress(address)) {
-            showStatus("Invalid Ethereum address.", true);
-            return;
-            }
+          showStatus("Invalid Ethereum address.", true);
+          return;
+        }
+
+        // Connect to contracts
+        contract = new ethers.Contract(provenanceContractAddress, provenanceABI, signer);
+        entityContract = new ethers.Contract(entityContractAddress, entityContractABI, signer);
+
         const [, , isRegistered, , role] = await entityContract.getEntityInfo(address);
 
         const network = await provider.getNetwork();
         networkNameSpan.textContent = `${network.name} (Chain ID: ${network.chainId})`;
-
-        
 
         if (!isRegistered) {
           showStatus("Not registered in the EntityContract. Please register first.", true);
@@ -1504,6 +1513,7 @@
 
         showStatus(`Connected as ${role}`);
         hideAllForms();
+
         switch (role) {
           case "Miner":
             registerForm?.classList.remove("hidden");
@@ -1519,88 +1529,46 @@
             break;
         }
       } catch (err) {
+        console.error(err);
         showStatus("Wallet connection failed: " + err.message, true);
       }
     }
 
-    const accounts = await window.ethereum.request({ method: 'eth_accounts' });
-    if (accounts.length > 0) {
-      connectWallet(); // Reconnect silently if already connected
-    }
-
-
     async function handleRegister(event) {
-  event.preventDefault();
-  clearStatus();
-
-  const origin = document.getElementById("origin").value;
-  const extractionDate = parseInt(document.getElementById("extractionDate").value);
-  const weight = parseFloat(document.getElementById("weight").value);
-  const characteristics = document.getElementById("characteristics").value;
-
-  if (!origin || !extractionDate || !weight || !characteristics) {
-    showStatus("All fields are required to register a diamond.", true);
-    return;
-  }
-
-  try {
-    showStatus("Sending registration transaction...");
-    const tx = await contract.registerRawDiamond(origin, extractionDate, weight, characteristics);
-    showStatus(`Transaction sent: ${tx.hash}`);
-    await tx.wait();
-    showStatus("Diamond registered successfully!");
-    registerForm.reset();
-  } catch (err) {
-    console.error(err);
-    showStatus("Registration failed: " + (err.message || err), true);
-  }
-}
-
-    async function handleProcess(event) {
       event.preventDefault();
-      const rawId = document.getElementById("rawDiamondId").value;
-      const weight = parseFloat(document.getElementById("processedWeight").value);
-      const characteristics = document.getElementById("processedCharacteristics").value;
+      clearStatus();
+
+      if (!contract) return showStatus("Contract not loaded.", true);
+
+      const origin = document.getElementById("origin").value;
+      const extractionDate = parseInt(document.getElementById("extractionDate").value);
+      const weight = parseFloat(document.getElementById("weight").value);
+      const characteristics = document.getElementById("characteristics").value;
+
+      if (!origin || !extractionDate || !weight || !characteristics) {
+        return showStatus("All fields are required.", true);
+      }
+
       try {
-        const tx = await contract.processDiamond(rawId, weight, characteristics);
+        showStatus("Sending transaction...");
+        const tx = await contract.registerRawDiamond(origin, extractionDate, weight, characteristics);
+        showStatus(`Transaction sent: ${tx.hash}`);
         await tx.wait();
-        showStatus("Diamond processed!");
+        showStatus("Diamond registered successfully.");
+        registerForm.reset();
       } catch (err) {
-        showStatus("Process failed: " + err.message, true);
+        console.error(err);
+        showStatus("Registration failed: " + (err.reason || err.message || err), true);
       }
     }
 
-    async function handleCertify(event) {
-      event.preventDefault();
-      const certId = document.getElementById("certifyDiamondId").value;
-      const certNum = document.getElementById("certificationId").value;
-      try {
-        const tx = await contract.certifyDiamond(certId, certNum);
-        await tx.wait();
-        showStatus("Diamond certified!");
-      } catch (err) {
-        showStatus("Certification failed: " + err.message, true);
-      }
-    }
+    // Auto reconnect if accounts exist
+    const accounts = await window.ethereum.request({ method: "eth_accounts" });
+    if (accounts.length > 0) connectWallet();
 
-    async function handleTransfer(event) {
-      event.preventDefault();
-      const transferId = document.getElementById("transferDiamondId").value;
-      const toAddress = document.getElementById("recipientAddress").value;
-      try {
-        const tx = await contract.transferDiamond(transferId, toAddress);
-        await tx.wait();
-        showStatus("Diamond transferred!");
-      } catch (err) {
-        showStatus("Transfer failed: " + err.message, true);
-      }
-    }
-
+    // Event Listeners
     connectWalletBtn.addEventListener("click", connectWallet);
     registerForm?.addEventListener("submit", handleRegister);
-    processForm?.addEventListener("submit", handleProcess);
-    certifyForm?.addEventListener("submit", handleCertify);
-    transferForm?.addEventListener("submit", handleTransfer);
   };
 </script> 
 
