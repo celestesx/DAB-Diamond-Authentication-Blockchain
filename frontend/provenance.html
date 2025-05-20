@@ -1566,8 +1566,9 @@
 
         registerForm.reset();
       } catch (err) {
-        console.error(err);
-        showStatus("Registration failed: " + (err.reason || err.message || err), true);
+         console.error("Register error:", err);
+        const reason = err?.error?.message || err?.reason || err?.message || "Unknown error";
+        showStatus("Registration failed: " + reason, true)
       }
     }
 
