@@ -1456,7 +1456,8 @@
     const networkNameSpan = document.getElementById("networkName");
  
 
-    const registerForm = document.getElementById("registerDiamondForm");
+    const registerForm = document.getElementById("registerRawDiamondForm");
+
     const processForm = document.getElementById("processDiamondForm");
     const certifyForm = document.getElementById("certifyDiamondForm");
     const transferForm = document.getElementById("transferDiamondForm");
@@ -1484,7 +1485,7 @@
         signer = provider.getSigner();
         contract = new ethers.Contract(provenanceContractAddress, provenanceABI, signer);
         entityContract = new ethers.Contract(entityContractAddress, entityContractABI, signer);
-
+        accountAddressSpan.textContent = address;
         const address = await signer.getAddress();
         if (!ethers.utils.isAddress(address)) {
             showStatus("Invalid Ethereum address.", true);
@@ -1528,20 +1529,46 @@
       connectWallet(); // Reconnect silently if already connected
     }
 
+    // async function handleRegister(event) {
+    //   event.preventDefault();
+    //   const origin = document.getElementById("origin").value;
+    //   const date = parseInt(document.getElementById("extractionDate").value);
+    //   const weight = parseFloat(document.getElementById("weight").value);
+    //   const characteristics = document.getElementById("characteristics").value;
+    //   try {
+    //     const tx = await contract.registerRawDiamond(origin, date, weight, characteristics);
+    //     await tx.wait();
+    //     showStatus("Raw diamond registered!");
+    //   } catch (err) {
+    //     showStatus("Register failed: " + err.message, true);
+    //   }
+    // }
     async function handleRegister(event) {
-      event.preventDefault();
-      const origin = document.getElementById("origin").value;
-      const date = parseInt(document.getElementById("extractionDate").value);
-      const weight = parseFloat(document.getElementById("weight").value);
-      const characteristics = document.getElementById("characteristics").value;
-      try {
-        const tx = await contract.registerRawDiamond(origin, date, weight, characteristics);
-        await tx.wait();
-        showStatus("Raw diamond registered!");
-      } catch (err) {
-        showStatus("Register failed: " + err.message, true);
-      }
-    }
+  event.preventDefault();
+  clearStatus();
+
+  const origin = document.getElementById("origin").value;
+  const extractionDate = parseInt(document.getElementById("extractionDate").value);
+  const weight = parseFloat(document.getElementById("weight").value);
+  const characteristics = document.getElementById("characteristics").value;
+
+  if (!origin || !extractionDate || !weight || !characteristics) {
+    showStatus("All fields are required to register a diamond.", true);
+    return;
+  }
+
+  try {
+    showStatus("Sending registration transaction...");
+    const tx = await contract.registerRawDiamond(origin, extractionDate, weight, characteristics);
+    showStatus(`Transaction sent: ${tx.hash}`);
+    await tx.wait();
+    showStatus("Diamond registered successfully!");
+    registerForm.reset();
+  } catch (err) {
+    console.error(err);
+    showStatus("Registration failed: " + (err.message || err), true);
+  }
+}
 
     async function handleProcess(event) {
       event.preventDefault();
