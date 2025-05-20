@@ -374,20 +374,13 @@ select {
   background-color: #4338ca;
 }
 
-.status-success {
-  background-color: #d1fae5;
-  color: #065f46;
-  border: 1px solid #6ee7b7;
-  padding: 1rem;
-  margin-top: 1rem;
-  border-radius: 0.5rem;
-}
-
-.status-error {
-  background-color: #fee2e2;
-  color: #991b1b;
-  border: 1px solid #fca5a5;
-  padding: 1rem;
-  margin-top: 1rem;
-  border-radius: 0.5rem;
+/* Wallet Status section centered at the top */
+#walletStatus {
+  max-width: 700px;
+  margin: 0 auto 2rem auto;
+  padding: 1.5rem;
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  text-align: center;
 }

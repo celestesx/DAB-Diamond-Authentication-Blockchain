@@ -23,8 +23,20 @@
     <img src="assets/logo.png" alt="Logo" />
   </div>
 
+
+
   <!-- Main Content -->
   <main class="main-container">
+
+     <section class="form-section" id="walletStatus">
+    <h2>Wallet Status</h2>
+    <button id="connectWalletBtn" class="cta-button">Connect Wallet</button>
+    <div class="wallet-info">
+      <p><strong>Connected Account:</strong> <span id="accountAddress">Not Connected</span></p>
+      <p><strong>Network:</strong> <span id="networkName">Not Connected</span></p>
+    </div>
+  </section>
+
     <!-- Register Raw Diamond -->
     <section class="form-section">
       <h2>Register Raw Diamond (Miners)</h2>
@@ -105,10 +117,12 @@
     <div id="statusMessage" class="status-message hidden"></div>
   </main>
 
-<script src="provenance.js" type="module"></script>
+
 <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js" type="application/javascript"></script>
 <script>
   window.onload = async function () {
+    const statusMessageDiv = document.getElementById("statusMessage");
+    console.log("Status message element:", statusMessageDiv); // Debug 
     const provenanceContractAddress = "0x69cB786e5d8747A22b28051616aA58875baf7C8d";
     const entityContractAddress = "0x79b894aC8CB20FD53Fd5095a047F54f9E3450253";
     const provenanceABI = [
@@ -1314,7 +1328,7 @@
     const connectWalletBtn = document.getElementById("connectWalletBtn");
     const accountAddressSpan = document.getElementById("accountAddress");
     const networkNameSpan = document.getElementById("networkName");
-    const statusMessageDiv = document.getElementById("statusMessage");
+ 
 
     const registerForm = document.getElementById("registerDiamondForm");
     const processForm = document.getElementById("processDiamondForm");
@@ -1445,7 +1459,7 @@
     certifyForm?.addEventListener("submit", handleCertify);
     transferForm?.addEventListener("submit", handleTransfer);
   };
-</script>
+</script> 
 
 
 </body>
