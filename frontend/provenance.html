@@ -121,7 +121,7 @@
 <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js" type="application/javascript"></script>
 <script>
   window.onload = async function () {
-    const statusMessageDiv = document.getElementById("statusMessage");
+    
     function showStatus(msg, isError = false) {
       statusMessageDiv.textContent = msg;
       statusMessageDiv.className = isError ? "status-error" : "status-success";
@@ -1461,17 +1461,29 @@
     let signer;
     let contract;
     let entityContract;
+    const sepoliaChainId = "0xaa36a7";
 
     const connectWalletBtn = document.getElementById("connectWalletBtn");
     const accountAddressSpan = document.getElementById("accountAddress");
     const networkNameSpan = document.getElementById("networkName");
-    const registerForm = document.getElementById("registerRawDiamondForm");
+    const statusMessageDiv = document.getElementById("statusMessage");
 
+    const registerForm = document.getElementById("registerRawDiamondForm");
     const processForm = document.getElementById("processDiamondForm");
     const certifyForm = document.getElementById("certifyDiamondForm");
     const transferForm = document.getElementById("transferDiamondForm");
 
- 
+    function showStatus(message, isError = false) {
+    statusMessageDiv.textContent = message;
+    statusMessageDiv.className = isError ? "status-error" : "status-success";
+    statusMessageDiv.classList.remove("hidden");
+    console.log(message);
+    }
+
+    function clearStatus() {
+    statusMessageDiv.textContent = "";
+    statusMessageDiv.classList.add("hidden");
+    }
 
     function hideAllForms() {
       registerForm?.classList.add("hidden");
@@ -1481,105 +1493,112 @@
     }
 
     async function connectWallet() {
-      try {
-        if (!window.ethereum) return showStatus("MetaMask not found.", true);
+    clearStatus();
+    if (!window.ethereum) return showStatus("MetaMask not found.", true);
 
+    try {
+        showStatus("Connecting to wallet...");
         await window.ethereum.request({ method: "eth_requestAccounts" });
 
         provider = new ethers.providers.Web3Provider(window.ethereum);
         signer = provider.getSigner();
-
         const address = await signer.getAddress();
         accountAddressSpan.textContent = address;
 
-        if (!ethers.utils.isAddress(address)) {
-          showStatus("Invalid Ethereum address.", true);
-          return;
+        const network = await provider.getNetwork();
+        networkNameSpan.textContent = `${network.name} (Chain ID: ${network.chainId})`;
+
+        if (network.chainId !== parseInt(sepoliaChainId, 16)) {
+        showStatus("Please switch to Sepolia network.", true);
+        return;
         }
 
-        // Connect to contracts
         contract = new ethers.Contract(provenanceContractAddress, provenanceABI, signer);
         entityContract = new ethers.Contract(entityContractAddress, entityContractABI, signer);
 
         const [, , isRegistered, , role] = await entityContract.getEntityInfo(address);
 
-        const network = await provider.getNetwork();
-        networkNameSpan.textContent = `${network.name} (Chain ID: ${network.chainId})`;
-
         if (!isRegistered) {
-          showStatus("Not registered in the EntityContract. Please register first.", true);
-          return;
+        showStatus("Not registered in EntityContract. Please register.", true);
+        return;
         }
 
         showStatus(`Connected as ${role}`);
         hideAllForms();
 
         switch (role) {
-          case "Miner":
+        case "Miner":
             registerForm?.classList.remove("hidden");
             break;
-          case "Manufacturer":
+        case "Manufacturer":
             processForm?.classList.remove("hidden");
             break;
-          case "Certifier":
+        case "Certifier":
             certifyForm?.classList.remove("hidden");
             break;
-          case "Retailer":
+        case "Retailer":
             transferForm?.classList.remove("hidden");
             break;
         }
-      } catch (err) {
+    } catch (err) {
         console.error(err);
-        showStatus("Wallet connection failed: " + err.message, true);
-      }
+        showStatus("Wallet connection failed: " + (err.message || err), true);
     }
+}
+
 
     async function handleRegister(event) {
-      event.preventDefault();
-      clearStatus();
+  event.preventDefault();
+  clearStatus();
 
-      if (!contract) return showStatus("Contract not loaded.", true);
+  if (!contract) return showStatus("Contract not loaded.", true);
 
-      const origin = document.getElementById("origin").value;
-      const extractionDate = parseInt(document.getElementById("extractionDate").value);
-      const weight = parseFloat(document.getElementById("weight").value);
-      const characteristics = document.getElementById("characteristics").value;
+  const origin = document.getElementById("origin").value;
+  const extractionDate = parseInt(document.getElementById("extractionDate").value);
+  const weight = parseFloat(document.getElementById("weight").value);
+  const characteristics = document.getElementById("characteristics").value;
 
-      if (!origin || !extractionDate || !weight || !characteristics) {
-        return showStatus("All fields are required.", true);
-      }
+  if (!origin || !extractionDate || !weight || !characteristics) {
+    return showStatus("All fields are required.", true);
+  }
 
-      try {
-        showStatus("Sending transaction...");
-        const tx = await contract.registerRawDiamond(origin, extractionDate, weight, characteristics);
-        showStatus(`Transaction sent: ${tx.hash}`);
-        const receipt = await tx.wait();
+  try {
+    showStatus("Sending transaction...");
+    const tx = await contract.registerRawDiamond(origin, extractionDate, weight, characteristics);
+    showStatus(`Transaction sent: ${tx.hash}`);
+    const receipt = await tx.wait();
 
-        // Extract the diamond ID from the DiamondRegistered event
-        const event = receipt.events.find(e => e.event === "DiamondRegistered");
-        if (event) {
-        const diamondId = event.args.diamondId.toString();
-        showStatus(`Diamond registered successfully! ID: ${diamondId}`);
-        } else {
-        showStatus("Diamond registered, but ID not found in logs.");
-        }
-
-        registerForm.reset();
-      } catch (err) {
-         console.error("Register error:", err);
-        const reason = err?.error?.message || err?.reason || err?.message || "Unknown error";
-        showStatus("Registration failed: " + reason, true)
-      }
+    const event = receipt.events.find(e => e.event === "DiamondRegistered");
+    if (event) {
+      const diamondId = event.args.diamondId.toString();
+      showStatus(`Diamond registered successfully! ID: ${diamondId}`);
+    } else {
+      showStatus("Diamond registered, but ID not found in logs.");
     }
 
-    // Auto reconnect if accounts exist
-    const accounts = await window.ethereum.request({ method: "eth_accounts" });
-    if (accounts.length > 0) connectWallet();
+    registerForm.reset();
+  } catch (err) {
+    console.error("Register error:", err);
+    const reason = err?.error?.message || err?.reason || err?.message || "Unknown error";
+    showStatus("Registration failed: " + reason, true);
+  }
+}
 
-    // Event Listeners
-    connectWalletBtn.addEventListener("click", connectWallet);
-  
-    registerForm.addEventListener("submit", handleRegister);
+// Auto-reconnect if wallet is already connected
+(async () => {
+  const accounts = await window.ethereum.request({ method: "eth_accounts" });
+  if (accounts.length > 0) connectWallet();
+})();
+
+// --- Event Listeners ---
+connectWalletBtn.addEventListener("click", connectWallet);
+registerForm.addEventListener("submit", handleRegister);
+
+// Handle MetaMask changes
+if (typeof window.ethereum !== "undefined") {
+  window.ethereum.on("accountsChanged", connectWallet);
+  window.ethereum.on("chainChanged", () => window.location.reload());
+}
   };
 </script> 
 
