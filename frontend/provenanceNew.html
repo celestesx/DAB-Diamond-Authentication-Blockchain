@@ -1,0 +1,1277 @@
+    <!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Diamond Provenance | Diamond Auth Block</title>
+    <link rel="stylesheet" href="style.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet" />
+  </head>
+  <body>
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <nav>
+        <ul>
+          <li><a href="index.html">Home</a></li>
+          <li><a href="entityInterfaceNew.html">Register Entity</a></li>
+          <li><a href="provenanceNew.html" class="active">Diamond Provenance</a></li>
+        </ul>
+      </nav>
+    </aside>
+
+    <!-- Logo -->
+    <div class="logo-floating">
+      <img src="assets/logo.png" alt="Logo" />
+    </div>
+
+    <!-- Main Content -->
+    <main class="main-container">
+      <section class="form-section" id="walletStatus">
+        <h2>Wallet Status</h2>
+        <button id="connectWalletBtn" class="cta-button">Connect Wallet</button>
+        <div class="wallet-info">
+          <p><strong>Connected Account:</strong> <span id="accountAddress">Not Connected</span></p>
+          <p><strong>Network:</strong> <span id="networkName">Not Connected</span></p>
+          <p><strong>Role:</strong> <span id="accountRole">Unknown</span></p>
+        </div>
+      </section>
+
+      <!-- Action Forms (initially hidden) -->
+      <section class="form-section hidden" id="minerActions">
+        <h2>Register Raw Diamond (Miners)</h2>
+        <form id="registerRawDiamondForm">
+          <div class="form-row">
+            <label for="rawOrigin">Origin</label>
+            <input type="text" id="rawOrigin" required />
+          </div>
+          <div class="form-row">
+            <label for="rawExtractionDate">Extraction Date (Unix Timestamp)</label>
+            <input type="number" id="rawExtractionDate" required />
+          </div>
+          <div class="form-row">
+            <label for="rawWeight">Weight (carats)</label>
+            <input type="number" id="rawWeight" step="0.01" required />
+          </div>
+          <div class="form-row">
+            <label for="rawCharacteristics">Characteristics</label>
+            <input type="text" id="rawCharacteristics" required />
+          </div>
+          <button type="submit" class="cta-button">Register Diamond</button>
+        </form>
+      </section>
+
+      <section class="form-section hidden" id="manufacturerActions">
+        <h2>Process Diamond (Manufacturers)</h2>
+        <form id="processDiamondForm">
+          <div class="form-row">
+            <label for="processRawDiamondId">Raw Diamond ID</label>
+            <input type="number" id="processRawDiamondId" required />
+          </div>
+          <div class="form-row">
+            <label for="processedWeight">New Weight (carats)</label>
+            <input type="number" id="processedWeight" step="0.01" required />
+          </div>
+          <div class="form-row">
+            <label for="processedCharacteristics">New Characteristics</label>
+            <input type="text" id="processedCharacteristics" required />
+          </div>
+          <button type="submit" class="cta-button">Process Diamond</button>
+        </form>
+      </section>
+
+      <section class="form-section hidden" id="certifierActions">
+        <h2>Certify Diamond (Certifiers)</h2>
+        <form id="certifyDiamondForm">
+          <div class="form-row">
+            <label for="certifyDiamondId">Diamond ID</label>
+            <input type="number" id="certifyDiamondId" required />
+          </div>
+          <div class="form-row">
+            <label for="certificationId">Certification ID</label>
+            <input type="text" id="certificationId" required />
+          </div>
+          <button type="submit" class="cta-button">Certify</button>
+        </form>
+      </section>
+
+      <section class="form-section">
+        <h2>Transfer Diamond</h2>
+        <form id="transferDiamondForm">
+          <div class="form-row">
+            <label for="transferDiamondId">Diamond ID</label>
+            <input type="number" id="transferDiamondId" required />
+          </div>
+          <div class="form-row">
+            <label for="transferToAddress">Recipient Address</label>
+            <input type="text" id="transferToAddress" placeholder="0x..." required />
+          </div>
+          <button type="submit" class="cta-button">Transfer</button>
+        </form>
+      </section>
+
+      <!-- Diamond Information Viewer -->
+      <section class="form-section">
+        <h2>View Diamond Information</h2>
+        <form id="getDiamondInfoForm">
+          <div class="form-row">
+            <label for="infoDiamondId">Diamond ID</label>
+            <input type="number" id="infoDiamondId" required />
+          </div>
+          <button type="submit" class="cta-button">Get Diamond Info</button>
+        </form>
+        <div id="diamondInfoDisplay" class="info-display hidden"></div>
+        <div id="diamondHistoryDisplay" class="info-display hidden">
+          <h3 class="text-xl font-semibold mb-2">Diamond History</h3>
+          <div id="historyList"></div>
+        </div>
+      </section>
+
+      <!-- Status Output -->
+      <div id="statusMessage" class="status-message hidden"></div>
+
+    <script
+      src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"
+      type="application/javascript"
+    ></script>
+    <script>
+      window.onload = function () {
+        console.log(
+          "LOG: window.onload event triggered for ProvenanceContract frontend."
+        );
+        if (typeof ethers === "undefined") {
+          console.error(
+            "FATAL ERROR: Ethers.js library (ethers object) is not defined. Ensure 'ethers-5.7.umd.min.js' is in the same directory as this HTML file."
+          );
+          const body = document.querySelector("body");
+          const errorDiv = document.createElement("div");
+          errorDiv.innerHTML =
+            '<h1 style="color:red; text-align:center; padding:20px;">Critical Error: Ethers.js library failed to load. DApp cannot function. Check browser console (F12) for details. Ensure ethers-5.7.umd.min.js is downloaded and in the same folder.</h1>';
+          body.prepend(errorDiv);
+          return;
+        }
+        console.log("LOG: Ethers.js library appears to be loaded.", ethers);
+
+        // --- Smart Contract Configuration ---
+        // !!! REPLACE WITH YOUR DEPLOYED ProvenanceContract ADDRESS ON SEPOLIA !!!
+        const provenanceContractAddress =
+          "0x79b894aC8CB20FD53Fd5095a047F54f9E3450253";
+        const provenanceContractABI = [
+          {
+            inputs: [
+              {
+                internalType: "address",
+                name: "entityContractAddress",
+                type: "address",
+              },
+            ],
+            stateMutability: "nonpayable",
+            type: "constructor",
+          },
+          {
+            anonymous: false,
+            inputs: [
+              {
+                indexed: true,
+                internalType: "uint256",
+                name: "diamondId",
+                type: "uint256",
+              },
+              {
+                indexed: true,
+                internalType: "address",
+                name: "certifier",
+                type: "address",
+              },
+              {
+                indexed: false,
+                internalType: "string",
+                name: "certificationId",
+                type: "string",
+              },
+            ],
+            name: "DiamondCertified",
+            type: "event",
+          },
+          {
+            anonymous: false,
+            inputs: [
+              {
+                indexed: true,
+                internalType: "uint256",
+                name: "rawDiamondId",
+                type: "uint256",
+              },
+              {
+                indexed: true,
+                internalType: "uint256",
+                name: "newDiamondId",
+                type: "uint256",
+              },
+              {
+                indexed: true,
+                internalType: "address",
+                name: "manufacturer",
+                type: "address",
+              },
+            ],
+            name: "DiamondProcessed",
+            type: "event",
+          },
+          {
+            anonymous: false,
+            inputs: [
+              {
+                indexed: true,
+                internalType: "uint256",
+                name: "diamondId",
+                type: "uint256",
+              },
+              {
+                indexed: true,
+                internalType: "address",
+                name: "miner",
+                type: "address",
+              },
+              {
+                indexed: false,
+                internalType: "string",
+                name: "origin",
+                type: "string",
+              },
+              {
+                indexed: false,
+                internalType: "uint256",
+                name: "weight",
+                type: "uint256",
+              },
+            ],
+            name: "DiamondRegistered",
+            type: "event",
+          },
+          {
+            anonymous: false,
+            inputs: [
+              {
+                indexed: true,
+                internalType: "uint256",
+                name: "diamondId",
+                type: "uint256",
+              },
+              {
+                indexed: true,
+                internalType: "address",
+                name: "from",
+                type: "address",
+              },
+              {
+                indexed: true,
+                internalType: "address",
+                name: "to",
+                type: "address",
+              },
+              {
+                indexed: false,
+                internalType: "string",
+                name: "transferType",
+                type: "string",
+              },
+            ],
+            name: "DiamondTransferred",
+            type: "event",
+          },
+          {
+            anonymous: false,
+            inputs: [
+              {
+                indexed: true,
+                internalType: "uint256",
+                name: "diamondId",
+                type: "uint256",
+              },
+              {
+                indexed: false,
+                internalType: "string",
+                name: "record",
+                type: "string",
+              },
+            ],
+            name: "HistoryRecordAdded",
+            type: "event",
+          },
+          {
+            anonymous: false,
+            inputs: [
+              {
+                indexed: true,
+                internalType: "address",
+                name: "owner",
+                type: "address",
+              },
+              {
+                indexed: true,
+                internalType: "address",
+                name: "approved",
+                type: "address",
+              },
+              {
+                indexed: true,
+                internalType: "uint256",
+                name: "tokenId",
+                type: "uint256",
+              },
+            ],
+            name: "Approval",
+            type: "event",
+          },
+          {
+            anonymous: false,
+            inputs: [
+              {
+                indexed: true,
+                internalType: "address",
+                name: "owner",
+                type: "address",
+              },
+              {
+                indexed: true,
+                internalType: "address",
+                name: "operator",
+                type: "address",
+              },
+              {
+                indexed: false,
+                internalType: "bool",
+                name: "approved",
+                type: "bool",
+              },
+            ],
+            name: "ApprovalForAll",
+            type: "event",
+          },
+          {
+            anonymous: false,
+            inputs: [
+              {
+                indexed: true,
+                internalType: "address",
+                name: "previousOwner",
+                type: "address",
+              },
+              {
+                indexed: true,
+                internalType: "address",
+                name: "newOwner",
+                type: "address",
+              },
+            ],
+            name: "OwnershipTransferred",
+            type: "event",
+          },
+          {
+            anonymous: false,
+            inputs: [
+              {
+                indexed: true,
+                internalType: "address",
+                name: "from",
+                type: "address",
+              },
+              {
+                indexed: true,
+                internalType: "address",
+                name: "to",
+                type: "address",
+              },
+              {
+                indexed: true,
+                internalType: "uint256",
+                name: "tokenId",
+                type: "uint256",
+              },
+            ],
+            name: "Transfer",
+            type: "event",
+          },
+          {
+            inputs: [
+              { internalType: "address", name: "to", type: "address" },
+              { internalType: "uint256", name: "tokenId", type: "uint256" },
+            ],
+            name: "approve",
+            outputs: [],
+            stateMutability: "nonpayable",
+            type: "function",
+          },
+          {
+            inputs: [
+              { internalType: "address", name: "owner", type: "address" },
+            ],
+            name: "balanceOf",
+            outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+            stateMutability: "view",
+            type: "function",
+          },
+          {
+            inputs: [
+              { internalType: "uint256", name: "tokenId", type: "uint256" },
+            ],
+            name: "getApproved",
+            outputs: [{ internalType: "address", name: "", type: "address" }],
+            stateMutability: "view",
+            type: "function",
+          },
+          {
+            inputs: [
+              { internalType: "address", name: "owner", type: "address" },
+              { internalType: "address", name: "operator", type: "address" },
+            ],
+            name: "isApprovedForAll",
+            outputs: [{ internalType: "bool", name: "", type: "bool" }],
+            stateMutability: "view",
+            type: "function",
+          },
+          {
+            inputs: [],
+            name: "name",
+            outputs: [{ internalType: "string", name: "", type: "string" }],
+            stateMutability: "view",
+            type: "function",
+          },
+          {
+            inputs: [],
+            name: "owner",
+            outputs: [{ internalType: "address", name: "", type: "address" }],
+            stateMutability: "view",
+            type: "function",
+          },
+          {
+            inputs: [
+              { internalType: "uint256", name: "tokenId", type: "uint256" },
+            ],
+            name: "ownerOf",
+            outputs: [{ internalType: "address", name: "", type: "address" }],
+            stateMutability: "view",
+            type: "function",
+          },
+          {
+            inputs: [],
+            name: "renounceOwnership",
+            outputs: [],
+            stateMutability: "nonpayable",
+            type: "function",
+          },
+          {
+            inputs: [
+              { internalType: "address", name: "from", type: "address" },
+              { internalType: "address", name: "to", type: "address" },
+              { internalType: "uint256", name: "tokenId", type: "uint256" },
+            ],
+            name: "safeTransferFrom",
+            outputs: [],
+            stateMutability: "nonpayable",
+            type: "function",
+          },
+          {
+            inputs: [
+              { internalType: "address", name: "from", type: "address" },
+              { internalType: "address", name: "to", type: "address" },
+              { internalType: "uint256", name: "tokenId", type: "uint256" },
+              { internalType: "bytes", name: "data", type: "bytes" },
+            ],
+            name: "safeTransferFrom",
+            outputs: [],
+            stateMutability: "nonpayable",
+            type: "function",
+          },
+          {
+            inputs: [
+              { internalType: "address", name: "operator", type: "address" },
+              { internalType: "bool", name: "approved", type: "bool" },
+            ],
+            name: "setApprovalForAll",
+            outputs: [],
+            stateMutability: "nonpayable",
+            type: "function",
+          },
+          {
+            inputs: [
+              { internalType: "bytes4", name: "interfaceId", type: "bytes4" },
+            ],
+            name: "supportsInterface",
+            outputs: [{ internalType: "bool", name: "", type: "bool" }],
+            stateMutability: "view",
+            type: "function",
+          },
+          {
+            inputs: [],
+            name: "symbol",
+            outputs: [{ internalType: "string", name: "", type: "string" }],
+            stateMutability: "view",
+            type: "function",
+          },
+          {
+            inputs: [
+              { internalType: "uint256", name: "index", type: "uint256" },
+            ],
+            name: "tokenByIndex",
+            outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+            stateMutability: "view",
+            type: "function",
+          },
+          {
+            inputs: [
+              { internalType: "address", name: "owner", type: "address" },
+              { internalType: "uint256", name: "index", type: "uint256" },
+            ],
+            name: "tokenOfOwnerByIndex",
+            outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+            stateMutability: "view",
+            type: "function",
+          },
+          {
+            inputs: [
+              { internalType: "uint256", name: "tokenId", type: "uint256" },
+            ],
+            name: "tokenURI",
+            outputs: [{ internalType: "string", name: "", type: "string" }],
+            stateMutability: "view",
+            type: "function",
+          },
+          {
+            inputs: [],
+            name: "totalSupply",
+            outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+            stateMutability: "view",
+            type: "function",
+          },
+          {
+            inputs: [
+              { internalType: "address", name: "from", type: "address" },
+              { internalType: "address", name: "to", type: "address" },
+              { internalType: "uint256", name: "tokenId", type: "uint256" },
+            ],
+            name: "transferFrom",
+            outputs: [],
+            stateMutability: "nonpayable",
+            type: "function",
+          },
+          {
+            inputs: [
+              { internalType: "address", name: "newOwner", type: "address" },
+            ],
+            name: "transferOwnership",
+            outputs: [],
+            stateMutability: "nonpayable",
+            type: "function",
+          },
+          {
+            inputs: [
+              { internalType: "string", name: "origin", type: "string" },
+              {
+                internalType: "uint256",
+                name: "extractionDate",
+                type: "uint256",
+              },
+              { internalType: "uint256", name: "weight", type: "uint256" },
+              {
+                internalType: "string",
+                name: "characteristics",
+                type: "string",
+              },
+            ],
+            name: "registerRawDiamond",
+            outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+            stateMutability: "nonpayable",
+            type: "function",
+          },
+          {
+            inputs: [
+              {
+                internalType: "uint256",
+                name: "rawDiamondId",
+                type: "uint256",
+              },
+              { internalType: "uint256", name: "weight", type: "uint256" },
+              {
+                internalType: "string",
+                name: "characteristics",
+                type: "string",
+              },
+            ],
+            name: "processDiamond",
+            outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+            stateMutability: "nonpayable",
+            type: "function",
+          },
+          {
+            inputs: [
+              { internalType: "uint256", name: "diamondId", type: "uint256" },
+              {
+                internalType: "string",
+                name: "certificationId",
+                type: "string",
+              },
+            ],
+            name: "certifyDiamond",
+            outputs: [],
+            stateMutability: "nonpayable",
+            type: "function",
+          },
+          {
+            inputs: [
+              { internalType: "uint256", name: "diamondId", type: "uint256" },
+              { internalType: "address", name: "to", type: "address" },
+            ],
+            name: "transferDiamond",
+            outputs: [],
+            stateMutability: "nonpayable",
+            type: "function",
+          },
+          {
+            inputs: [
+              { internalType: "uint256", name: "diamondId", type: "uint256" },
+            ],
+            name: "getDiamondBasicInfo",
+            outputs: [
+              { internalType: "string", name: "origin", type: "string" },
+              {
+                internalType: "uint256",
+                name: "extractionDate",
+                type: "uint256",
+              },
+              { internalType: "uint256", name: "weight", type: "uint256" },
+              {
+                internalType: "string",
+                name: "characteristics",
+                type: "string",
+              },
+            ],
+            stateMutability: "view",
+            type: "function",
+          },
+          {
+            inputs: [
+              { internalType: "uint256", name: "diamondId", type: "uint256" },
+            ],
+            name: "getDiamondCertInfo",
+            outputs: [
+              { internalType: "bool", name: "isCertified", type: "bool" },
+              {
+                internalType: "string",
+                name: "certificationId",
+                type: "string",
+              },
+              {
+                internalType: "uint256",
+                name: "rawDiamondId",
+                type: "uint256",
+              },
+            ],
+            stateMutability: "view",
+            type: "function",
+          },
+          {
+            inputs: [
+              { internalType: "uint256", name: "diamondId", type: "uint256" },
+            ],
+            name: "getDiamondOwnershipInfo",
+            outputs: [
+              {
+                internalType: "address",
+                name: "currentOwner",
+                type: "address",
+              },
+            ],
+            stateMutability: "view",
+            type: "function",
+          },
+          {
+            inputs: [
+              { internalType: "uint256", name: "diamondId", type: "uint256" },
+            ],
+            name: "getDiamondHistory",
+            outputs: [{ internalType: "string[]", name: "", type: "string[]" }],
+            stateMutability: "view",
+            type: "function",
+          },
+          {
+            inputs: [
+              {
+                internalType: "uint256",
+                name: "rawDiamondId",
+                type: "uint256",
+              },
+            ],
+            name: "getProcessedDiamonds",
+            outputs: [
+              { internalType: "uint256[]", name: "", type: "uint256[]" },
+            ],
+            stateMutability: "view",
+            type: "function",
+          },
+          {
+            inputs: [
+              { internalType: "address", name: "account", type: "address" },
+              { internalType: "string", name: "role", type: "string" },
+            ],
+            name: "hasRole",
+            outputs: [{ internalType: "bool", name: "", type: "bool" }],
+            stateMutability: "view",
+            type: "function",
+          },
+        ];
+
+        // !!! REPLACE WITH YOUR DEPLOYED EntityContract ADDRESS ON SEPOLIA !!!
+        const entityContractAddress =
+          "0x69cB786e5d8747A22b28051616aA58875baf7C8d";
+        const entityContractABI = [
+          {
+            inputs: [
+              {
+                internalType: "address",
+                name: "_entityAddress",
+                type: "address",
+              },
+            ],
+            name: "getEntityInfo",
+            outputs: [
+              { internalType: "string", name: "name", type: "string" },
+              { internalType: "string", name: "location", type: "string" },
+              { internalType: "bool", name: "isRegistered", type: "bool" },
+              { internalType: "string", name: "licenseNumber", type: "string" },
+              { internalType: "string", name: "role", type: "string" },
+            ],
+            stateMutability: "view",
+            type: "function",
+          },
+        ];
+
+        let provider;
+        let signer;
+        let provenanceContractInstance;
+        let entityContractInstance;
+        let currentUserRole = null;
+        const sepoliaChainId = "0xaa36a7";
+
+        const connectWalletBtn = document.getElementById("connectWalletBtn");
+        const accountAddressSpan = document.getElementById("accountAddress");
+        const networkNameSpan = document.getElementById("networkName");
+        const accountRoleSpan = document.getElementById("accountRole");
+        const statusMessageDiv = document.getElementById("statusMessage");
+
+        const minerActionsDiv = document.getElementById("minerActions");
+        const manufacturerActionsDiv = document.getElementById(
+          "manufacturerActions"
+        );
+        const certifierActionsDiv = document.getElementById("certifierActions");
+
+        const registerRawDiamondForm = document.getElementById(
+          "registerRawDiamondForm"
+        );
+        const rawOriginInput = document.getElementById("rawOrigin");
+        const rawExtractionDateInput =
+          document.getElementById("rawExtractionDate");
+        const rawWeightInput = document.getElementById("rawWeight");
+        const rawCharacteristicsInput =
+          document.getElementById("rawCharacteristics");
+        const registerRawDiamondBtn = document.getElementById(
+          "registerRawDiamondBtn"
+        );
+
+        const processDiamondForm =
+          document.getElementById("processDiamondForm");
+        const processRawDiamondIdInput = document.getElementById(
+          "processRawDiamondId"
+        );
+        const processedWeightInput = document.getElementById("processedWeight");
+        const processedCharacteristicsInput = document.getElementById(
+          "processedCharacteristics"
+        );
+        const processDiamondBtn = document.getElementById("processDiamondBtn");
+
+        const certifyDiamondForm =
+          document.getElementById("certifyDiamondForm");
+        const certifyDiamondIdInput =
+          document.getElementById("certifyDiamondId");
+        const certificationIdInput = document.getElementById("certificationId");
+        const certifyDiamondBtn = document.getElementById("certifyDiamondBtn");
+
+        const transferDiamondForm = document.getElementById(
+          "transferDiamondForm"
+        );
+        const transferDiamondIdInput =
+          document.getElementById("transferDiamondId");
+        const transferToAddressInput =
+          document.getElementById("transferToAddress");
+        const transferDiamondBtn =
+          document.getElementById("transferDiamondBtn");
+
+        const getDiamondInfoForm =
+          document.getElementById("getDiamondInfoForm");
+        const infoDiamondIdInput = document.getElementById("infoDiamondId");
+        const getDiamondInfoBtn = document.getElementById("getDiamondInfoBtn");
+        const diamondInfoDisplay =
+          document.getElementById("diamondInfoDisplay");
+        const diamondHistoryDisplay = document.getElementById(
+          "diamondHistoryDisplay"
+        );
+        const historyListDiv = document.getElementById("historyList");
+
+        function showStatus(message, isError = false) {
+          statusMessageDiv.textContent = message;
+          statusMessageDiv.className = isError
+            ? "status-error"
+            : "status-success";
+          statusMessageDiv.classList.remove("hidden");
+          console.log("STATUS:", message);
+        }
+
+        function clearStatus() {
+          statusMessageDiv.textContent = "";
+          statusMessageDiv.classList.add("hidden");
+        }
+
+        function hideAllRoleSpecificActions() {
+          minerActionsDiv.style.display = "none";
+          manufacturerActionsDiv.style.display = "none";
+          certifierActionsDiv.style.display = "none";
+        }
+
+        function updateUIVisibility(role) {
+          hideAllRoleSpecificActions();
+          accountRoleSpan.textContent = role || "Not Registered / Unknown";
+
+          if (role === "Miner") {
+            minerActionsDiv.style.display = "block";
+          } else if (role === "Manufacturer") {
+            manufacturerActionsDiv.style.display = "block";
+          } else if (role === "Certifier") {
+            certifierActionsDiv.style.display = "block";
+          }
+        }
+
+        function disableAllActionButtons(disable = true) {
+          registerRawDiamondBtn.disabled = disable;
+          processDiamondBtn.disabled = disable;
+          certifyDiamondBtn.disabled = disable;
+          transferDiamondBtn.disabled = disable;
+          getDiamondInfoBtn.disabled = disable;
+        }
+
+        async function connectWallet() {
+          clearStatus();
+          hideAllRoleSpecificActions();
+          accountRoleSpan.textContent = "Checking...";
+          diamondInfoDisplay.classList.add("hidden");
+          diamondHistoryDisplay.classList.add("hidden");
+
+          if (typeof window.ethereum === "undefined") {
+            showStatus(
+              "MetaMask is not installed. Please install MetaMask.",
+              true
+            );
+            accountRoleSpan.textContent = "MetaMask Needed";
+            return;
+          }
+
+          try {
+            showStatus("Connecting to wallet...");
+            await window.ethereum.request({ method: "eth_requestAccounts" });
+
+            provider = new ethers.providers.Web3Provider(window.ethereum);
+            signer = provider.getSigner();
+            const address = await signer.getAddress();
+            accountAddressSpan.textContent = address;
+
+            const network = await provider.getNetwork();
+            networkNameSpan.textContent = `${network.name} (Chain ID: ${network.chainId})`;
+
+            if (network.chainId !== parseInt(sepoliaChainId, 16)) {
+              showStatus(
+                `Please connect to Sepolia. You are on ${network.name}.`,
+                true
+              );
+              disableAllActionButtons(true);
+              accountRoleSpan.textContent = "Wrong Network";
+              return;
+            }
+
+            if (
+              provenanceContractAddress ===
+                "0x69cB786e5d8747A22b28051616aA58875baf7C8d" ||
+              entityContractAddress ===
+                "0x79b894aC8CB20FD53Fd5095a047F54f9E3450253"
+            ) {
+              showStatus(
+                "Contract address(es) not set in script. Please update.",
+                true
+              );
+              disableAllActionButtons(true);
+              accountRoleSpan.textContent = "Config Error";
+              return;
+            }
+            provenanceContractInstance = new ethers.Contract(
+              provenanceContractAddress,
+              provenanceContractABI,
+              signer
+            );
+            entityContractInstance = new ethers.Contract(
+              entityContractAddress,
+              entityContractABI,
+              signer
+            );
+
+            showStatus(
+              `Wallet connected to ${network.name}. Fetching role...`,
+              false
+            );
+
+            try {
+              const entityInfo = await entityContractInstance.getEntityInfo(
+                address
+              );
+              if (entityInfo.isRegistered && entityInfo.role) {
+                currentUserRole = entityInfo.role;
+                showStatus(
+                  `Wallet connected. Role: ${currentUserRole}. Provenance contract loaded.`,
+                  false
+                );
+              } else {
+                currentUserRole = null;
+                showStatus(
+                  "Wallet connected. Account not registered or no specific role in EntityContract.",
+                  false
+                );
+              }
+            } catch (roleError) {
+              console.error("Error fetching entity role:", roleError);
+              currentUserRole = null;
+              showStatus(
+                "Wallet connected. Could not determine role from EntityContract.",
+                true
+              );
+            }
+
+            updateUIVisibility(currentUserRole);
+            connectWalletBtn.textContent = "Wallet Connected";
+            connectWalletBtn.disabled = true;
+            disableAllActionButtons(false);
+          } catch (error) {
+            console.error("Wallet connection error:", error);
+            showStatus(
+              `Error connecting wallet: ${error.message || error}`,
+              true
+            );
+            accountAddressSpan.textContent = "Connection Failed";
+            networkNameSpan.textContent = "Error";
+            accountRoleSpan.textContent = "Error";
+            disableAllActionButtons(true);
+          }
+        }
+
+        async function handleTransaction(
+          buttonElement,
+          actionFunction,
+          successMessagePrefix,
+          ...args
+        ) {
+          clearStatus();
+          if (!provenanceContractInstance) {
+            showStatus(
+              "Please connect wallet and ensure you are on Sepolia.",
+              true
+            );
+            return;
+          }
+          buttonElement.disabled = true;
+          showStatus("Sending transaction...");
+          try {
+            const tx = await actionFunction(...args);
+            showStatus(
+              `Transaction sent! Hash: ${tx.hash}. Waiting for confirmation...`
+            );
+            const receipt = await tx.wait();
+            showStatus(
+              `${successMessagePrefix} successful! Tx confirmed. Block: ${receipt.blockNumber}`,
+              false
+            );
+            return receipt;
+          } catch (error) {
+            console.error("Transaction error:", error);
+            let errMsg =
+              error.reason ||
+              (error.data ? error.data.message : error.message) ||
+              "Transaction failed.";
+            if (errMsg.includes("Only miners can register diamonds"))
+              errMsg =
+                "Action failed: Only registered Miners can perform this.";
+            else if (errMsg.includes("Only manufacturers can process diamonds"))
+              errMsg =
+                "Action failed: Only registered Manufacturers can perform this.";
+            else if (errMsg.includes("Only certifiers can certify diamonds"))
+              errMsg =
+                "Action failed: Only registered Certifiers can perform this.";
+            else if (errMsg.includes("You don't own this diamond"))
+              errMsg = "Action failed: You are not the owner of this diamond.";
+            else if (errMsg.includes("Raw diamond does not exist"))
+              errMsg =
+                "Action failed: The specified raw diamond ID does not exist.";
+            else if (errMsg.includes("Diamond does not exist"))
+              errMsg =
+                "Action failed: The specified diamond ID does not exist.";
+            else if (errMsg.includes("Invalid transfer between entities"))
+              errMsg =
+                "Action failed: Transfer not allowed by EntityContract rules.";
+            else if (
+              errMsg.includes("Only retailers can transfer to consumers")
+            )
+              errMsg =
+                "Action failed: Only Retailers can transfer to a new consumer.";
+            else if (
+              errMsg.includes(
+                "This diamond has not entered the consumer market"
+              )
+            )
+              errMsg =
+                "Action failed: Diamond not in consumer market for this type of transfer.";
+            else if (
+              errMsg.includes(
+                "Consumers cannot transfer back to registered entities"
+              )
+            )
+              errMsg =
+                "Action failed: Consumers cannot transfer diamonds back to registered entities.";
+            showStatus(errMsg, true);
+          } finally {
+            buttonElement.disabled = false;
+          }
+          return null;
+        }
+
+        registerRawDiamondForm.addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const origin = rawOriginInput.value;
+          const extractionDate = parseInt(rawExtractionDateInput.value);
+          const weight = parseInt(rawWeightInput.value);
+          const characteristics = rawCharacteristicsInput.value;
+          if (isNaN(extractionDate) || isNaN(weight)) {
+            showStatus("Invalid number for date or weight.", true);
+            return;
+          }
+          const receipt = await handleTransaction(
+            registerRawDiamondBtn,
+            provenanceContractInstance.registerRawDiamond,
+            "Raw diamond registration",
+            origin,
+            extractionDate,
+            weight,
+            characteristics
+          );
+          if (receipt) {
+            const event = receipt.events?.find(
+              (event) => event.event === "DiamondRegistered"
+            );
+            if (event && event.args) {
+              showStatus(
+                `Raw diamond registered successfully! New Diamond ID: ${event.args.diamondId.toString()}`,
+                false
+              );
+            }
+            registerRawDiamondForm.reset();
+          }
+        });
+
+        processDiamondForm.addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const rawId = parseInt(processRawDiamondIdInput.value);
+          const weight = parseInt(processedWeightInput.value);
+          const characteristics = processedCharacteristicsInput.value;
+          if (isNaN(rawId) || isNaN(weight)) {
+            showStatus("Invalid number for ID or weight.", true);
+            return;
+          }
+          const receipt = await handleTransaction(
+            processDiamondBtn,
+            provenanceContractInstance.processDiamond,
+            "Diamond processing",
+            rawId,
+            weight,
+            characteristics
+          );
+          if (receipt) {
+            const event = receipt.events?.find(
+              (event) => event.event === "DiamondProcessed"
+            );
+            if (event && event.args) {
+              showStatus(
+                `Diamond processed successfully! New Processed Diamond ID: ${event.args.newDiamondId.toString()}`,
+                false
+              );
+            }
+            processDiamondForm.reset();
+          }
+        });
+
+        certifyDiamondForm.addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const diamondId = parseInt(certifyDiamondIdInput.value);
+          const certId = certificationIdInput.value;
+          if (isNaN(diamondId)) {
+            showStatus("Invalid Diamond ID.", true);
+            return;
+          }
+          await handleTransaction(
+            certifyDiamondBtn,
+            provenanceContractInstance.certifyDiamond,
+            "Diamond certification",
+            diamondId,
+            certId
+          );
+          certifyDiamondForm.reset();
+        });
+
+        transferDiamondForm.addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const diamondId = parseInt(transferDiamondIdInput.value);
+          const toAddress = transferToAddressInput.value;
+          if (isNaN(diamondId) || !ethers.utils.isAddress(toAddress)) {
+            showStatus("Invalid Diamond ID or recipient address.", true);
+            return;
+          }
+          await handleTransaction(
+            transferDiamondBtn,
+            provenanceContractInstance.transferDiamond,
+            "Diamond transfer",
+            diamondId,
+            toAddress
+          );
+          transferDiamondForm.reset();
+        });
+
+        getDiamondInfoForm.addEventListener("submit", async (e) => {
+          e.preventDefault();
+          clearStatus();
+          diamondInfoDisplay.classList.add("hidden");
+          diamondHistoryDisplay.classList.add("hidden");
+          historyListDiv.innerHTML = "";
+
+          if (!provenanceContractInstance) {
+            showStatus(
+              "Please connect wallet and ensure you are on Sepolia.",
+              true
+            );
+            return;
+          }
+          const diamondId = parseInt(infoDiamondIdInput.value);
+          if (isNaN(diamondId)) {
+            showStatus("Invalid Diamond ID.", true);
+            return;
+          }
+
+          getDiamondInfoBtn.disabled = true;
+          showStatus("Fetching diamond information...");
+
+          try {
+            const basicInfo =
+              await provenanceContractInstance.getDiamondBasicInfo(diamondId);
+            const certInfo =
+              await provenanceContractInstance.getDiamondCertInfo(diamondId);
+            const ownerInfo =
+              await provenanceContractInstance.getDiamondOwnershipInfo(
+                diamondId
+              );
+            const history = await provenanceContractInstance.getDiamondHistory(
+              diamondId
+            );
+
+            let html = `<h3 class="text-xl font-semibold mb-2">Diamond #${diamondId} Info:</h3>`;
+            html += `<p><strong>Owner:</strong> ${ownerInfo}</p>`;
+            html += `<p><strong>Origin:</strong> ${basicInfo.origin}</p>`;
+            html += `<p><strong>Extraction Date:</strong> ${new Date(
+              basicInfo.extractionDate.toNumber() * 1000
+            ).toLocaleDateString()}</p>`;
+            html += `<p><strong>Weight:</strong> ${
+              basicInfo.weight.toString() / 100
+            } carats</p>`;
+            html += `<p><strong>Characteristics:</strong> ${basicInfo.characteristics}</p>`;
+            html += `<p><strong>Is Certified:</strong> ${
+              certInfo.isCertified ? "Yes" : "No"
+            }</p>`;
+            if (certInfo.isCertified) {
+              html += `<p><strong>Certification ID:</strong> ${certInfo.certificationId}</p>`;
+            }
+            if (certInfo.rawDiamondId.toNumber() > 0) {
+              html += `<p><strong>Processed from Raw ID:</strong> ${certInfo.rawDiamondId.toString()}</p>`;
+            }
+            diamondInfoDisplay.innerHTML = html;
+            diamondInfoDisplay.classList.remove("hidden");
+
+            if (history.length > 0) {
+              history.forEach((record) => {
+                const item = document.createElement("div");
+                item.className = "history-item";
+                item.textContent = record;
+                historyListDiv.appendChild(item);
+              });
+              diamondHistoryDisplay.classList.remove("hidden");
+            } else {
+              historyListDiv.innerHTML = "<p>No history records found.</p>";
+              diamondHistoryDisplay.classList.remove("hidden");
+            }
+            showStatus("Diamond information retrieved.", false);
+          } catch (error) {
+            console.error("Error fetching diamond info:", error);
+            let errMsg =
+              error.reason ||
+              (error.data ? error.data.message : error.message) ||
+              "Failed to fetch diamond info.";
+            showStatus(errMsg, true);
+          } finally {
+            getDiamondInfoBtn.disabled = false;
+          }
+        });
+
+        connectWalletBtn.addEventListener("click", connectWallet);
+
+        if (typeof window.ethereum !== "undefined") {
+          window.ethereum.on("accountsChanged", (accounts) => {
+            showStatus(
+              "Account changed. Please reconnect.",
+              accounts.length === 0
+            );
+            accountAddressSpan.textContent = "Not Connected";
+            networkNameSpan.textContent = "Not Connected";
+            accountRoleSpan.textContent = "Unknown";
+            connectWalletBtn.textContent = "Connect Wallet";
+            connectWalletBtn.disabled = false;
+            provenanceContractInstance = null;
+            entityContractInstance = null;
+            currentUserRole = null;
+            disableAllActionButtons(true);
+            hideAllRoleSpecificActions();
+            if (accounts.length > 0) connectWallet();
+          });
+
+          window.ethereum.on("chainChanged", (chainId) => {
+            showStatus(
+              `Network changed. Please ensure it's Sepolia and reconnect.`
+            );
+            accountAddressSpan.textContent = "Not Connected";
+            networkNameSpan.textContent = "Not Connected";
+            accountRoleSpan.textContent = "Unknown";
+            connectWalletBtn.textContent = "Connect Wallet";
+            connectWalletBtn.disabled = false;
+            provenanceContractInstance = null;
+            entityContractInstance = null;
+            currentUserRole = null;
+            disableAllActionButtons(true);
+            hideAllRoleSpecificActions();
+            connectWallet();
+          });
+        }
+        disableAllActionButtons(true);
+        hideAllRoleSpecificActions();
+      };
+    </script>
+  </body>
+</html>
