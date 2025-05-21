@@ -376,10 +376,10 @@ select {
 
 /* Wallet Status section centered at the top */
 #walletStatus {
-  max-width: 700px;
-  margin: 0 auto 2rem auto;
-  padding: 1.5rem;
-  background-color: #fff;
+  max-width: 600px;
+  margin: 60px auto;
+  padding: 40px;
+  background-color:  #ffffff;
   border-radius: 12px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
   text-align: center;
