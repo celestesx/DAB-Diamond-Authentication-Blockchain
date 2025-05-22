@@ -42,6 +42,9 @@ contract Marketplace is Ownable {
     event ListingCancelled(uint256 indexed listingId, uint256 indexed diamondId, address indexed seller);
     event DiamondReportedStolen(uint256 indexed diamondId, address indexed reporter, string details);
     event StolenReportResolved(uint256 indexed diamondId, address indexed resolver);
+
+    //debuggign
+    event LogMessage(string message, address value);
     
     // Constructor
     constructor(address provenanceAddress) Ownable(msg.sender) {
@@ -98,8 +101,12 @@ contract Marketplace is Ownable {
         // Get the diamond ID
         uint256 diamondId = listing.diamondId;
         
-        // Transfer using transferDiamond function which doesn't require approval
-        _provenanceContract.transferDiamond(diamondId, buyer);
+        // Ensure the seller still owns the diamond
+        require(_provenanceContract.ownerOf(diamondId) == msg.sender, "Seller no longer owns this diamond");
+        
+        // Transfer using marketplaceTransferDiamond function
+        // This lets the marketplace transfer on behalf of the seller
+        _provenanceContract.marketplaceTransferDiamond(diamondId, msg.sender, buyer);
         
         // Update listing status
         listing.active = false;
