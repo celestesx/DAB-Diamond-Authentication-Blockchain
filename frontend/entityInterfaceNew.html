@@ -1,91 +1,110 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>Entity Management | Diamond Auth Block</title>
-  <link rel="stylesheet" href="style.css" />
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
-</head>
-<body>
-  <!-- Sidebar -->
-   <aside class="sidebar">
-    <nav>
-      <ul>
-        <li><a href="index.html">Home</a></li>
-        <li><a href="entityInterfaceNew.html"class="active">Register Entity</a></li>
-        <li><a href="provenanceNew.html">Diamond Provenance</a></li>
-      </ul>
-    </nav>
-  </aside>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Entity Management | Diamond Auth Block</title>
+    <link rel="stylesheet" href="style.css" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <nav>
+        <ul>
+          <li><a href="index.html">Home</a></li>
+          <li>
+            <a href="entityInterfaceNew.html" class="active">Register Entity</a>
+          </li>
+          <li><a href="provenanceNew.html">Diamond Provenance</a></li>
+          <li><a href="marketplaceInterface.html">Diamond Marketplace</a></li>
+        </ul>
+      </nav>
+    </aside>
 
-  <!-- Floating Logo -->
-  <div class="logo-floating">
-    <img src="assets/logo.png" alt="Logo" />
-  </div>
+    <!-- Floating Logo -->
+    <div class="logo-floating">
+      <img src="assets/logo.png" alt="Logo" />
+    </div>
 
-  <!-- Main Content -->
-  <main class="main-container">
-    
-    <!-- Wallet Status -->
-    <section class="form-section">
-      <h2>Wallet Status</h2>
-      <button id="connectWalletBtn" class="cta-button">Connect Wallet</button>
-      <div class="wallet-info">
-        <p><strong>Connected Account:</strong> <span id="accountAddress">Not Connected</span></p>
-        <p><strong>Network:</strong> <span id="networkName">Not Connected</span></p>
-      </div>
-    </section>
-
-    <!-- Register Entity -->
-    <section class="form-section">
-      <h2>Register Entity</h2>
-      <form id="registerEntityForm">
-        <div class="form-row">
-          <label for="entityName">Name</label>
-          <input type="text" id="entityName" required />
+    <!-- Main Content -->
+    <main class="main-container">
+      <!-- Wallet Status -->
+      <section class="form-section">
+        <h2>Wallet Status</h2>
+        <button id="connectWalletBtn" class="cta-button">Connect Wallet</button>
+        <div class="wallet-info">
+          <p>
+            <strong>Connected Account:</strong>
+            <span id="accountAddress">Not Connected</span>
+          </p>
+          <p>
+            <strong>Network:</strong>
+            <span id="networkName">Not Connected</span>
+          </p>
         </div>
-        <div class="form-row">
-          <label for="entityLocation">Location</label>
-          <input type="text" id="entityLocation" required />
-        </div>
-        <div class="form-row">
-          <label for="entityRole">Role</label>
-          <select id="entityRole" required>
-            <option value="" disabled selected>Select role</option>
-            <option value="Miner">Miner</option>
-            <option value="Manufacturer">Manufacturer</option>
-            <option value="Certifier">Certifier</option>
-            <option value="Retailer">Retailer</option>
-          </select>
-        </div>
-        <div class="form-row">
-          <label for="licenseNumber">License Number</label>
-          <input type="text" id="licenseNumber" required />
-        </div>
-        <button type="submit" id="registerEntityBtn" class="cta-button">Register Entity</button>
+      </section>
 
-      </form>
-    </section>
+      <!-- Register Entity -->
+      <section class="form-section">
+        <h2>Register Entity</h2>
+        <form id="registerEntityForm">
+          <div class="form-row">
+            <label for="entityName">Name</label>
+            <input type="text" id="entityName" required />
+          </div>
+          <div class="form-row">
+            <label for="entityLocation">Location</label>
+            <input type="text" id="entityLocation" required />
+          </div>
+          <div class="form-row">
+            <label for="entityRole">Role</label>
+            <select id="entityRole" required>
+              <option value="" disabled selected>Select role</option>
+              <option value="Miner">Miner</option>
+              <option value="Manufacturer">Manufacturer</option>
+              <option value="Certifier">Certifier</option>
+              <option value="Retailer">Retailer</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <label for="licenseNumber">License Number</label>
+            <input type="text" id="licenseNumber" required />
+          </div>
+          <button type="submit" id="registerEntityBtn" class="cta-button">
+            Register Entity
+          </button>
+        </form>
+      </section>
 
-    <!-- Entity Info -->
-    <section class="form-section">
-      <h2>Get Entity Info</h2>
-      <form id="getEntityInfoForm">
-        <div class="form-row">
-          <label for="infoEntityAddress">Entity Address</label>
-          <input type="text" id="infoEntityAddress" placeholder="0x..." required />
-        </div>
-        <button type="submit" id="getEntityInfoBtn" class="cta-button">Get Info</button>
-      </form>
-      <div id="entityInfoDisplay" class="info-box hidden"></div>
-    </section>
+      <!-- Entity Info -->
+      <section class="form-section">
+        <h2>Get Entity Info</h2>
+        <form id="getEntityInfoForm">
+          <div class="form-row">
+            <label for="infoEntityAddress">Entity Address</label>
+            <input
+              type="text"
+              id="infoEntityAddress"
+              placeholder="0x..."
+              required
+            />
+          </div>
+          <button type="submit" id="getEntityInfoBtn" class="cta-button">
+            Get Info
+          </button>
+        </form>
+        <div id="entityInfoDisplay" class="info-box hidden"></div>
+      </section>
 
-    <!-- Status Message -->
-    <div id="statusMessage" class="status-message hidden"></div>
-  </main>
+      <!-- Status Message -->
+      <div id="statusMessage" class="status-message hidden"></div>
+    </main>
 
-  <script src="main.js" type="module"></script>
-  <script
+    <script src="main.js" type="module"></script>
+    <script
       src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"
       type="application/javascript"
     ></script>
@@ -511,6 +530,5 @@
         getEntityInfoBtn.disabled = true;
       }; // End of window.onload
     </script>
- 
-</body>
+  </body>
 </html>

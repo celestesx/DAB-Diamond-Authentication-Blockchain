@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Diamond Marketplace | Diamond Auth Block</title>
+    <link rel="stylesheet" href="style.css" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <aside class="sidebar">
+      <nav>
+        <ul>
+          <li><a href="index.html">Home</a></li>
+          <li><a href="entityInterfaceNew.html">Register Entity</a></li>
+          <li><a href="provenanceNew.html">Diamond Provenance</a></li>
+          <li><a href="marketplaceNew.html" class="active">Marketplace</a></li>
+        </ul>
+      </nav>
+    </aside>
+
+    <div class="logo-floating">
+      <img src="assets/logo.png" alt="Logo" />
+    </div>
+
+    <main class="main-container">
+      <section class="form-section">
+        <h2>Wallet Status</h2>
+        <button id="connectWalletBtn" class="cta-button">Connect Wallet</button>
+        <div class="wallet-info">
+          <p>
+            <strong>Connected Account:</strong>
+            <span id="accountAddress">Not Connected</span>
+          </p>
+          <p>
+            <strong>Network:</strong>
+            <span id="networkName">Not Connected</span>
+          </p>
+        </div>
+      </section>
+
+      <section class="form-section">
+        <h2>List Diamond for Sale</h2>
+        <form id="listDiamondForm">
+          <div class="form-row">
+            <label for="listDiamondId">Diamond ID (Token ID)</label>
+            <input type="number" id="listDiamondId" required />
+          </div>
+          <button type="submit" id="listDiamondBtn" class="cta-button">
+            List Diamond
+          </button>
+        </form>
+      </section>
+
+      <section class="form-section">
+        <h2>Complete Diamond Sale</h2>
+        <form id="completeSaleForm">
+          <div class="form-row">
+            <label for="saleListingId">Listing ID</label>
+            <input type="number" id="saleListingId" required />
+          </div>
+          <div class="form-row">
+            <label for="buyerAddress">Buyer Address</label>
+            <input type="text" id="buyerAddress" placeholder="0x..." required />
+          </div>
+          <button type="submit" id="completeSaleBtn" class="cta-button">
+            Complete Sale
+          </button>
+        </form>
+      </section>
+
+      <section class="form-section">
+        <h2>Cancel Listing</h2>
+        <form id="cancelListingForm">
+          <div class="form-row">
+            <label for="cancelListingId">Listing ID</label>
+            <input type="number" id="cancelListingId" required />
+          </div>
+          <button type="submit" id="cancelListingBtn" class="cta-button">
+            Cancel Listing
+          </button>
+        </form>
+      </section>
+
+      <section class="form-section">
+        <h2>Report Stolen Diamond</h2>
+        <form id="reportStolenForm">
+          <div class="form-row">
+            <label for="stolenDiamondId">Diamond ID</label>
+            <input type="number" id="stolenDiamondId" required />
+          </div>
+          <div class="form-row">
+            <label for="stolenDetails">Details of Incident</label>
+            <textarea id="stolenDetails" rows="3" required></textarea>
+          </div>
+          <button type="submit" id="reportStolenBtn" class="cta-button">
+            Report Stolen
+          </button>
+        </form>
+      </section>
+
+      <section class="form-section">
+        <h2>Resolve Stolen Report (Admin Only)</h2>
+        <form id="resolveReportForm">
+          <div class="form-row">
+            <label for="resolveDiamondId">Diamond ID</label>
+            <input type="number" id="resolveDiamondId" required />
+          </div>
+          <button type="submit" id="resolveReportBtn" class="cta-button">
+            Resolve Report
+          </button>
+        </form>
+      </section>
+
+      <hr />
+
+      <section class="form-section">
+        <h2>View Diamond Details</h2>
+        <form id="getDiamondDetailsForm">
+          <div class="form-row">
+            <label for="detailsDiamondId">Diamond ID</label>
+            <input type="number" id="detailsDiamondId" required />
+          </div>
+          <button type="submit" id="getDiamondDetailsBtn" class="cta-button">
+            Get Details
+          </button>
+        </form>
+        <div id="diamondDetailsDisplay" class="info-box hidden"></div>
+      </section>
+
+      <section class="form-section">
+        <h2>View Active Listings</h2>
+        <button id="getActiveListingsBtn" class="cta-button">
+          Load Active Listings
+        </button>
+        <div id="activeListingsDisplay" class="info-box hidden"></div>
+      </section>
+
+      <section class="form-section">
+        <h2>View Listing Details</h2>
+        <form id="getListingDetailsForm">
+          <div class="form-row">
+            <label for="detailsListingId">Listing ID</label>
+            <input type="number" id="detailsListingId" required />
+          </div>
+          <button type="submit" id="getListingDetailsBtn" class="cta-button">
+            Get Listing Details
+          </button>
+        </form>
+        <div id="listingDetailsDisplay" class="info-box hidden"></div>
+      </section>
+
+      <section class="form-section">
+        <h2>View Stolen Reports for a Diamond</h2>
+        <form id="getStolenReportsForm">
+          <div class="form-row">
+            <label for="reportsDiamondId">Diamond ID</label>
+            <input type="number" id="reportsDiamondId" required />
+          </div>
+          <button type="submit" id="getStolenReportsBtn" class="cta-button">
+            Get Stolen Reports
+          </button>
+        </form>
+        <div id="stolenReportsDisplay" class="info-box hidden"></div>
+      </section>
+
+      <section class="form-section">
+        <h2>Check if Diamond is Stolen</h2>
+        <form id="isDiamondStolenForm">
+          <div class="form-row">
+            <label for="checkStolenDiamondId">Diamond ID</label>
+            <input type="number" id="checkStolenDiamondId" required />
+          </div>
+          <button type="submit" id="isDiamondStolenBtn" class="cta-button">
+            Check Status
+          </button>
+        </form>
+        <div id="isDiamondStolenDisplay" class="info-box hidden"></div>
+      </section>
+
+      <div id="statusMessage" class="status-message hidden"></div>
+    </main>
+
+    <script
+      src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"
+      type="application/javascript"
+    ></script>
+    <script>
+      window.onload = function () {
+        // --- Smart Contract Configuration ---
+        const marketplaceContractAddress = "";
+        const marketplaceContractABI = [];
+
+        // --- Global Vars ---
+        let provider;
+        let signer;
+        let contract;
+        const sepoliaChainId = "0xaa36a7";
+
+        // --- DOM  ---
+        const connectWalletBtn = document.getElementById("connectWalletBtn");
+        const accountAddressSpan = document.getElementById("accountAddress");
+        const networkNameSpan = document.getElementById("networkName");
+        const statusMessageDiv = document.getElementById("statusMessage");
+
+        // Form specific elements
+        const listDiamondForm = document.getElementById("listDiamondForm");
+        const listDiamondIdInput = document.getElementById("listDiamondId");
+        const listDiamondBtn = document.getElementById("listDiamondBtn");
+
+        const completeSaleForm = document.getElementById("completeSaleForm");
+        const saleListingIdInput = document.getElementById("saleListingId");
+        const buyerAddressInput = document.getElementById("buyerAddress");
+        const completeSaleBtn = document.getElementById("completeSaleBtn");
+
+        const cancelListingForm = document.getElementById("cancelListingForm");
+        const cancelListingIdInput = document.getElementById("cancelListingId");
+        const cancelListingBtn = document.getElementById("cancelListingBtn");
+
+        const reportStolenForm = document.getElementById("reportStolenForm");
+        const stolenDiamondIdInput = document.getElementById("stolenDiamondId");
+        const stolenDetailsInput = document.getElementById("stolenDetails");
+        const reportStolenBtn = document.getElementById("reportStolenBtn");
+
+        const resolveReportForm = document.getElementById("resolveReportForm");
+        const resolveDiamondIdInput =
+          document.getElementById("resolveDiamondId");
+        const resolveReportBtn = document.getElementById("resolveReportBtn");
+
+        const getDiamondDetailsForm = document.getElementById(
+          "getDiamondDetailsForm"
+        );
+        const detailsDiamondIdInput =
+          document.getElementById("detailsDiamondId");
+        const getDiamondDetailsBtn = document.getElementById(
+          "getDiamondDetailsBtn"
+        );
+        const diamondDetailsDisplay = document.getElementById(
+          "diamondDetailsDisplay"
+        );
+
+        const getActiveListingsBtn = document.getElementById(
+          "getActiveListingsBtn"
+        );
+        const activeListingsDisplay = document.getElementById(
+          "activeListingsDisplay"
+        );
+
+        const getListingDetailsForm = document.getElementById(
+          "getListingDetailsForm"
+        );
+        const detailsListingIdInput =
+          document.getElementById("detailsListingId");
+        const getListingDetailsBtn = document.getElementById(
+          "getListingDetailsBtn"
+        );
+        const listingDetailsDisplay = document.getElementById(
+          "listingDetailsDisplay"
+        );
+
+        const getStolenReportsForm = document.getElementById(
+          "getStolenReportsForm"
+        );
+        const reportsDiamondIdInput =
+          document.getElementById("reportsDiamondId");
+        const getStolenReportsBtn = document.getElementById(
+          "getStolenReportsBtn"
+        );
+        const stolenReportsDisplay = document.getElementById(
+          "stolenReportsDisplay"
+        );
+
+        const isDiamondStolenForm = document.getElementById(
+          "isDiamondStolenForm"
+        );
+        const checkStolenDiamondIdInput = document.getElementById(
+          "checkStolenDiamondId"
+        );
+        const isDiamondStolenBtn =
+          document.getElementById("isDiamondStolenBtn");
+        const isDiamondStolenDisplay = document.getElementById(
+          "isDiamondStolenDisplay"
+        );
+
+        const allActionButtons = [
+          listDiamondBtn,
+          completeSaleBtn,
+          cancelListingBtn,
+          reportStolenBtn,
+          resolveReportBtn,
+          getDiamondDetailsBtn,
+          getActiveListingsBtn,
+          getListingDetailsBtn,
+          getStolenReportsBtn,
+          isDiamondStolenBtn,
+        ];
+
+        // --- Helper Functions ---
+        function showStatus(message, isError = false) {
+          statusMessageDiv.textContent = message;
+          statusMessageDiv.className = isError
+            ? "status-message status-error"
+            : "status-message status-success";
+          statusMessageDiv.classList.remove("hidden");
+          console.log(message);
+        }
+
+        function clearStatus() {
+          statusMessageDiv.textContent = "";
+          statusMessageDiv.classList.add("hidden");
+        }
+
+        function disableButtons(disabled = true) {
+          allActionButtons.forEach((btn) => (btn.disabled = disabled));
+        }
+
+        function formatTimestamp(timestamp) {
+          if (!timestamp || timestamp.toString() === "0") return "N/A";
+          return new Date(timestamp * 1000).toLocaleString();
+        }
+
+        // --- Core Functions ---
+        async function connectWallet() {
+          clearStatus();
+          if (typeof window.ethereum === "undefined") {
+            showStatus(
+              "MetaMask is not installed. Please install MetaMask.",
+              true
+            );
+            return;
+          }
+
+          try {
+            showStatus("Connecting to wallet...");
+            await window.ethereum.request({ method: "eth_requestAccounts" });
+
+            provider = new ethers.providers.Web3Provider(window.ethereum);
+            signer = provider.getSigner();
+            const address = await signer.getAddress();
+            accountAddressSpan.textContent = address;
+
+            const network = await provider.getNetwork();
+            networkNameSpan.textContent = `${network.name} (Chain ID: ${network.chainId})`;
+
+            if (network.chainId !== parseInt(sepoliaChainId, 16)) {
+              showStatus(
+                `Please connect to the Sepolia testnet. You are on ${network.name}.`,
+                true
+              );
+              disableButtons(true);
+              return;
+            }
+
+            contract = new ethers.Contract(
+              marketplaceContractAddress,
+              marketplaceContractABI,
+              signer
+            );
+            showStatus(
+              `Wallet connected. Account: ${address}. Network: ${network.name}. Contract loaded.`,
+              false
+            );
+            connectWalletBtn.textContent = "Wallet Connected";
+            connectWalletBtn.disabled = true;
+            disableButtons(false);
+          } catch (error) {
+            console.error("Wallet connection error:", error);
+            showStatus(
+              `Error connecting wallet: ${error.message || error}`,
+              true
+            );
+            accountAddressSpan.textContent = "Connection Failed";
+            networkNameSpan.textContent = "Error";
+            disableButtons(true);
+          }
+        }
+
+        async function handleTransaction(
+          form,
+          button,
+          actionFunction,
+          successMessage,
+          displayUpdateFunction
+        ) {
+          event.preventDefault();
+          clearStatus();
+          if (!contract) {
+            showStatus(
+              "Please connect your wallet first and ensure you are on Sepolia.",
+              true
+            );
+            return;
+          }
+          if (
+            marketplaceContractAddress ===
+            "YOUR_MARKETPLACE_CONTRACT_ADDRESS_ON_SEPOLIA"
+          ) {
+            showStatus(
+              "Please update the marketplaceContractAddress in the script.",
+              true
+            );
+            return;
+          }
+
+          button.disabled = true;
+          showStatus("Sending transaction...");
+
+          try {
+            const tx = await actionFunction();
+            showStatus(
+              `Transaction sent! Hash: ${tx.hash}. Waiting for confirmation...`
+            );
+            const receipt = await tx.wait();
+            showStatus(
+              `${successMessage} Transaction confirmed. Block: ${receipt.blockNumber}`,
+              false
+            );
+            if (form) form.reset();
+            if (displayUpdateFunction) await displayUpdateFunction(); // Optional: refresh related data
+          } catch (error) {
+            console.error("Transaction error:", error);
+            let errorMessage = "Transaction failed.";
+            if (error.data && error.data.message)
+              errorMessage = `Contract revert: ${error.data.message}`;
+            else if (error.reason) errorMessage = `Error: ${error.reason}`;
+            else if (error.message) errorMessage = `Error: ${error.message}`;
+            showStatus(errorMessage, true);
+          } finally {
+            button.disabled = false;
+          }
+        }
+
+        async function handleViewCall(
+          button,
+          inputElement,
+          actionFunction,
+          displayElement,
+          displayFormatter
+        ) {
+          event.preventDefault();
+          clearStatus();
+          displayElement.classList.add("hidden");
+
+          if (
+            !contract &&
+            !(actionFunction.name === "getActiveListings" && !inputElement)
+          ) {
+            // getActiveListings might not need input
+            if (!contract) {
+              showStatus(
+                "Please connect your wallet first and ensure you are on Sepolia.",
+                true
+              );
+              return;
+            }
+          }
+          if (
+            marketplaceContractAddress ===
+            "YOUR_MARKETPLACE_CONTRACT_ADDRESS_ON_SEPOLIA"
+          ) {
+            showStatus(
+              "Please update the marketplaceContractAddress in the script.",
+              true
+            );
+            return;
+          }
+
+          const inputValue = inputElement ? inputElement.value : undefined;
+          if (
+            inputElement &&
+            !inputValue &&
+            actionFunction.name !== "getActiveListings"
+          ) {
+            // Active listings doesn't require input
+            showStatus("Input value is required.", true);
+            return;
+          }
+
+          if (
+            inputElement &&
+            inputElement.id === "buyerAddress" &&
+            !ethers.utils.isAddress(inputValue)
+          ) {
+            showStatus("Invalid buyer Ethereum address provided.", true);
+            return;
+          }
+
+          button.disabled = true;
+          showStatus("Fetching information...");
+
+          try {
+            const result = await actionFunction(inputValue); // Pass value if needed
+            displayFormatter(result, displayElement);
+            displayElement.classList.remove("hidden");
+            showStatus("Information retrieved successfully.", false);
+          } catch (error) {
+            console.error("View call error:", error);
+            let errorMessage = "Error fetching information.";
+            if (error.data?.message)
+              errorMessage = `Contract revert: ${error.data.message}`;
+            else if (error.reason) errorMessage = `Error: ${error.reason}`;
+            else if (error.message) errorMessage = `Error: ${error.message}`;
+            showStatus(errorMessage, true);
+            displayElement.classList.add("hidden");
+          } finally {
+            button.disabled = false;
+          }
+        }
+
+        // --- Event Handlers ---
+
+        listDiamondForm.addEventListener("submit", (e) =>
+          handleTransaction(
+            listDiamondForm,
+            listDiamondBtn,
+            () => contract.listDiamond(listDiamondIdInput.value),
+            `Diamond ${listDiamondIdInput.value} listed successfully!`
+          )
+        );
+
+        completeSaleForm.addEventListener("submit", (e) =>
+          handleTransaction(
+            completeSaleForm,
+            completeSaleBtn,
+            () =>
+              contract.directCompleteSale(
+                saleListingIdInput.value,
+                buyerAddressInput.value
+              ),
+            `Sale of listing ${saleListingIdInput.value} completed!`
+          )
+        );
+
+        cancelListingForm.addEventListener("submit", (e) =>
+          handleTransaction(
+            cancelListingForm,
+            cancelListingBtn,
+            () => contract.cancelListing(cancelListingIdInput.value),
+            `Listing ${cancelListingIdInput.value} cancelled successfully!`
+          )
+        );
+
+        reportStolenForm.addEventListener("submit", (e) =>
+          handleTransaction(
+            reportStolenForm,
+            reportStolenBtn,
+            () =>
+              contract.reportStolenDiamond(
+                stolenDiamondIdInput.value,
+                stolenDetailsInput.value
+              ),
+            `Diamond ${stolenDiamondIdInput.value} reported as stolen.`
+          )
+        );
+
+        resolveReportForm.addEventListener("submit", (e) =>
+          handleTransaction(
+            resolveReportForm,
+            resolveReportBtn,
+            () => contract.resolveReport(resolveDiamondIdInput.value),
+            `Stolen report for diamond ${resolveDiamondIdInput.value} resolved.`
+          )
+        );
+
+        getDiamondDetailsForm.addEventListener("submit", (e) =>
+          handleViewCall(
+            getDiamondDetailsBtn,
+            detailsDiamondIdInput,
+            (diamondId) => contract.getDiamondDetails(diamondId),
+            diamondDetailsDisplay,
+            (info, element) => {
+              element.innerHTML = `
+                  <h3>Diamond Details (ID: ${detailsDiamondIdInput.value})</h3>
+                  <p><strong>Current Owner:</strong> ${info.currentOwner}</p>
+                  <p><strong>Is Listed:</strong> ${
+                    info.isListed ? "Yes" : "No"
+                  }</p>
+                  <p><strong>Is Reported Stolen:</strong> ${
+                    info.isReportedStolen ? "Yes" : "No"
+                  }</p>
+                  <p><strong>Origin:</strong> ${info.origin || "N/A"}</p>
+                  <p><strong>Weight (ct):</strong> ${ethers.utils.formatUnits(
+                    info.weight,
+                    2
+                  )}</p> <p><strong>Is Certified:</strong> ${
+                info.isCertified ? "Yes" : "No"
+              }</p>
+                  <p><strong>Certification ID:</strong> ${
+                    info.certificationId || "N/A"
+                  }</p>
+              `;
+            }
+          )
+        );
+
+        getActiveListingsBtn.addEventListener("click", (e) =>
+          handleViewCall(
+            getActiveListingsBtn,
+            null, // No input element for this one
+            () => contract.getActiveListings(),
+            activeListingsDisplay,
+            async (listingIds, element) => {
+              if (listingIds.length === 0) {
+                element.innerHTML = "<p>No active listings found.</p>";
+                return;
+              }
+              element.innerHTML = `<h3>Active Listings (${listingIds.length})</h3>`;
+              const ul = document.createElement("ul");
+              ul.style.paddingLeft = "0";
+              ul.style.listStyleType = "none";
+
+              for (const listingId of listingIds) {
+                try {
+                  const details = await contract.getListingDetails(
+                    listingId.toString()
+                  );
+
+                  const diamondInfo = await contract.getDiamondDetails(
+                    details.diamondId.toString()
+                  ); // Using getDiamondDetails as it's comprehensive
+
+                  const li = document.createElement("li");
+                  li.className = "listing-item";
+                  li.innerHTML = `
+                        <strong>Listing ID:</strong> ${listingId.toString()} <br/>
+                        <strong>Diamond ID:</strong> ${details.diamondId.toString()} <br/>
+                        <strong>Seller:</strong> ${details.seller} <br/>
+                        <strong>Origin:</strong> ${
+                          diamondInfo.origin || "N/A"
+                        } <br/>
+                        <strong>Weight:</strong> ${ethers.utils.formatUnits(
+                          diamondInfo.weight,
+                          2
+                        )} ct <br/>
+                        <strong>Listed At:</strong> ${formatTimestamp(
+                          details.listedAt
+                        )}
+                    `;
+                  ul.appendChild(li);
+                } catch (e) {
+                  console.error(
+                    `Error fetching details for listing ${listingId}:`,
+                    e
+                  );
+                  const li = document.createElement("li");
+                  li.className = "listing-item";
+                  li.textContent = `Listing ID: ${listingId.toString()} (Error fetching details)`;
+                  ul.appendChild(li);
+                }
+              }
+              element.appendChild(ul);
+            }
+          )
+        );
+
+        getListingDetailsForm.addEventListener("submit", (e) =>
+          handleViewCall(
+            getListingDetailsBtn,
+            detailsListingIdInput,
+            (listingId) => contract.getListingDetails(listingId),
+            listingDetailsDisplay,
+            (info, element) => {
+              element.innerHTML = `
+                  <h3>Listing Details (ID: ${detailsListingIdInput.value})</h3>
+                  <p><strong>Diamond ID:</strong> ${info.diamondId.toString()}</p>
+                  <p><strong>Seller:</strong> ${info.seller}</p>
+                  <p><strong>Active:</strong> ${info.active ? "Yes" : "No"}</p>
+                  <p><strong>Listed At:</strong> ${formatTimestamp(
+                    info.listedAt
+                  )}</p>
+              `;
+            }
+          )
+        );
+
+        getStolenReportsForm.addEventListener("submit", (e) =>
+          handleViewCall(
+            getStolenReportsBtn,
+            reportsDiamondIdInput,
+            (diamondId) => contract.getStolenReports(diamondId),
+            stolenReportsDisplay,
+            (reports, element) => {
+              element.innerHTML = `<h3>Stolen Reports for Diamond ID: ${reportsDiamondIdInput.value}</h3>`;
+              if (reports.reporters.length === 0) {
+                element.innerHTML +=
+                  "<p>No stolen reports found for this diamond.</p>";
+                return;
+              }
+              let reportsHtml = "<ul>";
+              for (let i = 0; i < reports.reporters.length; i++) {
+                reportsHtml += `<li>
+                      <p><strong>Reporter:</strong> ${reports.reporters[i]}</p>
+                      <p><strong>Report Time:</strong> ${formatTimestamp(
+                        reports.reportTimes[i]
+                      )}</p>
+                      <p><strong>Details:</strong> ${reports.details[i]}</p>
+                      <p><strong>Resolved:</strong> ${
+                        reports.resolved[i] ? "Yes" : "No"
+                      }</p>
+                  </li><hr/>`;
+              }
+              reportsHtml += "</ul>";
+              element.innerHTML += reportsHtml;
+            }
+          )
+        );
+
+        isDiamondStolenForm.addEventListener("submit", (e) =>
+          handleViewCall(
+            isDiamondStolenBtn,
+            checkStolenDiamondIdInput,
+            (diamondId) => contract.isDiamondStolen(diamondId),
+            isDiamondStolenDisplay,
+            (isStolen, element) => {
+              element.innerHTML = `
+                  <h3>Diamond Stolen Status (ID: ${
+                    checkStolenDiamondIdInput.value
+                  })</h3>
+                  <p><strong>Is Stolen:</strong> ${isStolen ? "Yes" : "No"}</p>
+              `;
+            }
+          )
+        );
+
+        // --- wallet Event Listeners ---
+        connectWalletBtn.addEventListener("click", connectWallet);
+
+        if (typeof window.ethereum !== "undefined") {
+          window.ethereum.on("accountsChanged", (accounts) => {
+            showStatus(
+              "Account changed. Please reconnect if necessary.",
+              accounts.length === 0
+            );
+            if (accounts.length === 0) {
+              accountAddressSpan.textContent = "Not Connected";
+              networkNameSpan.textContent = "Not Connected";
+              connectWalletBtn.textContent = "Connect Wallet";
+              connectWalletBtn.disabled = false;
+              contract = null;
+              disableButtons(true);
+            } else {
+              connectWallet(); // Reconnect with the new account
+            }
+          });
+
+          window.ethereum.on("chainChanged", (chainId) => {
+            showStatus(
+              `Network changed to Chain ID: ${chainId}. Please ensure it's Sepolia and reconnect.`,
+              true
+            );
+            connectWallet(); // Reconnect and check network
+          });
+        }
+-
+        disableButtons(true); // Disable buttons until wallet is connected
+      }; 
+    </script>
+  </body>
+</html>
