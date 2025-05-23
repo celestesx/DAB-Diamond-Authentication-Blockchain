@@ -15,12 +15,15 @@
   .sidebar {
     width: 220px;
     height: 100vh;
-    background-color: #ffffff;
+    background-color: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
     padding: 40px 20px;
-    border-right: 1px solid #ddd;
+    border-right: 1px solid rgba(221, 221, 221, 0.5);
     position: fixed;
     top: 0;
     left: 0;
+    z-index: 15;
+    pointer-events: auto;
   }
   
   .sidebar nav ul {
@@ -61,7 +64,12 @@
     position: fixed;
     top: 20px;
     right: 30px;
-    z-index: 10;
+    z-index: 15;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 15px;
+    padding: 10px;
+    pointer-events: auto;
   }
   
   .logo-floating img {
@@ -78,6 +86,16 @@
     justify-content: center;
     padding: 60px 20px;
     text-align: center;
+    position: relative;
+    z-index: 2;
+    pointer-events: none;
+  }
+  
+  .hero-content {
+    max-width: 800px;
+    position: relative;
+    z-index: 3;
+    pointer-events: auto;
   }
   
   .hero h1 {
@@ -126,14 +144,35 @@
     max-height: 400px;
   }
   
+  /* Spline */
+  .spline-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 1;
+    overflow: hidden;
+  }
+  
+  .spline-container canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+    background: transparent;
+    object-fit: cover;
+    pointer-events: auto;
+  }
+  
   /* Form Section */
   .form-section {
-    max-width: 600px;
-    margin: 60px auto;
-    padding: 40px;
-    background-color: #f9f9f9;
+    background-color: #f9fafb;
     border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.05);
+    width: 100%;
+    max-width: 1000px;
   }
   
   .form-section h2 {
@@ -228,21 +267,26 @@ body.report-stolen-page {
     margin: 100px auto;
   }
   
-  /* Main container ENTITY */
+  /* Main container */
 .main-container {
-  margin-left: 250px;
+  margin-left: 220px;
   padding: 3rem 2rem;
-  width: 100%;
-  max-width: 900px;
+  width: calc(100% - 220px);
+  max-width: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 /* Form styling */
 .form-section {
-  background-color: #f9fafb;
-  border-radius: 12px;
-  padding: 2rem;
   margin-bottom: 2rem;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.05);
+  padding: 2rem;
+  background-color: #fff;
+  border-radius: 0.75rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 1000px;
 }
 
 .form-section h2 {
@@ -332,6 +376,8 @@ select {
   background-color: #fff;
   border-radius: 0.75rem;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 1000px;
 }
 
 .form-section h2 {
@@ -376,11 +422,12 @@ select {
 
 /* Wallet Status section centered at the top */
 #walletStatus {
-  max-width: 600px;
-  margin: 60px auto;
-  padding: 40px;
-  background-color:  #ffffff;
+  width: 100%;
+  max-width: 1000px;
+  margin: 0 auto 2rem auto;
+  padding: 2rem;
+  background-color: #ffffff;
   border-radius: 12px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.05);
   text-align: center;
 }

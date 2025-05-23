@@ -5,38 +5,48 @@
   <title>Diamond Auth Block</title>
   <link rel="stylesheet" href="style.css">
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Import maps polyfill for Spline -->
+  <script async src="https://unpkg.com/es-module-shims@1.3.6/dist/es-module-shims.js"></script>
+  <script type="importmap">
+    {
+      "imports": {
+        "@splinetool/runtime": "https://unpkg.com/@splinetool/runtime@1.9.96/build/runtime.js"
+      }
+    }
+  </script>
 </head>
 <body>
 
- 
   <aside class="sidebar">
     <nav>
       <ul>
         <li><a href="index.html" class="active">Home</a></li>
         <li><a href="entityInterfaceNew.html">Register Entity</a></li>
         <li><a href="provenanceNew.html">Diamond Provenance</a></li>
-        <li><a href="marketplaceInterface.html">Diamond Marketplace</a></li>
+        <li><a href="marketplaceInterface.html">Marketplace</a></li>
       </ul>
     </nav>
   </aside>
 
-
   <div class="logo-floating">
     <img src="assets\dab-logo-new-alt.png" alt="Diamond Auth Block Logo">
-    
   </div>
 
-
+  <!-- Spline 3D Background -->
+  <div class="spline-container">
+    <canvas id="canvas3d"></canvas>
+  </div>
+<!-- 
   <main class="hero">
     <div class="hero-content">
       <h1>Welcome to Diamond Auth Block</h1>
       <p>Track your diamond's journey from mine to marketplace with full transparency.</p>
       <a href="entityInterfaceNew.html" class="cta-button">Get Started</a>
-      <div class="gif-container">
-        <img src="assets/image-asset.gif" alt="Diamond animation">
-      </div>
     </div>
-  </main>
+  </main> -->
+
+  <script type="module" src="spline-loader.js"></script>
 
 </body>
 </html>
