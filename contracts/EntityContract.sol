@@ -79,38 +79,8 @@ contract EntityContract {
 
         emit EntityRegistered(msg.sender, _name, normalisedRole, _licenseNumber);
     }
-
-    //Check if a transfer is valid (both parties need to be registered entities)
-    function isValidTransfer(address _from, address _to) public returns (bool) {
-        bool fromRegistered = entities[_from].isRegistered;
-        bool toRegistered = entities[_to].isRegistered;
-        
-        string memory message;
-        bool isValid = false;
-        
-        if (fromRegistered && toRegistered) {
-            isValid = true;
-            message = string(abi.encodePacked(
-                "Valid transfer between registered entities: ", 
-                entities[_from].role, 
-                " to ", 
-                entities[_to].role
-            ));
-        } else {
-            if (!fromRegistered && !toRegistered) {
-                message = "Invalid transfer: Both sender and receiver are not registered entities";
-            } else if (!fromRegistered) {
-                message = "Invalid transfer: Sender is not a registered entity";
-            } else {
-                message = "Invalid transfer: Receiver is not a registered entity";
-            }
-        }
-        
-        emit TransferValidation(_from, _to, isValid, message);
-        return isValid;
-    }
     
-    //view function to validate transfer - can be called by Provenance Contract
+    //view function to validate transfer - called by Provenance Contract
     function validateTransfer(address _from, address _to) public view returns (bool) {
         return entities[_from].isRegistered && entities[_to].isRegistered;
     }
@@ -152,23 +122,6 @@ contract EntityContract {
         
         return false;
     }
-
-    //check if a wallet address has a role
-    function hasRole(address _address, string memory _role) private view returns (bool) {
-        if (!entities[_address].isRegistered) {
-            return false;
-        }
-        
-        string memory normalizedRole = normaliseRole(_role);
-        return keccak256(abi.encodePacked(entities[_address].role)) == 
-               keccak256(abi.encodePacked(normalizedRole));
-    }
-
-    //get entities by role
-    function getEntitiesByRole(string memory _role) public view returns (address[] memory) {
-        string memory normalisedRole = normaliseRole(_role);
-        return entitiesByRole[normalisedRole];
-    } 
 
     //get entity info
     function getEntityInfo(address _entityAddress) public view returns (

@@ -190,16 +190,7 @@ contract Provenance is ERC721Enumerable, Ownable {
         require(_exists(diamondId), "Diamond does not exist");
         return _diamondHistory[diamondId];
     }
-    
-    function getProcessedDiamonds(uint256 rawDiamondId) external view returns (uint256[] memory) {
-        require(_exists(rawDiamondId), "Diamond does not exist");
-        return _processedDiamonds[rawDiamondId];
-    }
-    
-    function hasRole(address account, string calldata role) external view returns (bool) {
-        return _hasRole(account, role);
-    }
-    
+        
     // ====== Internal Helper Functions ======
     
     function _determineTransferType(
