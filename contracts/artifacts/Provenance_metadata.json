@@ -347,6 +347,25 @@
 				"anonymous": false,
 				"inputs": [
 					{
+						"indexed": false,
+						"internalType": "string",
+						"name": "message",
+						"type": "string"
+					},
+					{
+						"indexed": false,
+						"internalType": "address",
+						"name": "value",
+						"type": "address"
+					}
+				],
+				"name": "LogMessage",
+				"type": "event"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
 						"indexed": true,
 						"internalType": "address",
 						"name": "previousOwner",
@@ -555,51 +574,8 @@
 				"outputs": [
 					{
 						"internalType": "address",
-						"name": "currentOwner",
-						"type": "address"
-					}
-				],
-				"stateMutability": "view",
-				"type": "function"
-			},
-			{
-				"inputs": [
-					{
-						"internalType": "uint256",
-						"name": "rawDiamondId",
-						"type": "uint256"
-					}
-				],
-				"name": "getProcessedDiamonds",
-				"outputs": [
-					{
-						"internalType": "uint256[]",
 						"name": "",
-						"type": "uint256[]"
-					}
-				],
-				"stateMutability": "view",
-				"type": "function"
-			},
-			{
-				"inputs": [
-					{
-						"internalType": "address",
-						"name": "account",
 						"type": "address"
-					},
-					{
-						"internalType": "string",
-						"name": "role",
-						"type": "string"
-					}
-				],
-				"name": "hasRole",
-				"outputs": [
-					{
-						"internalType": "bool",
-						"name": "",
-						"type": "bool"
 					}
 				],
 				"stateMutability": "view",
@@ -627,6 +603,29 @@
 					}
 				],
 				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "diamondId",
+						"type": "uint256"
+					},
+					{
+						"internalType": "address",
+						"name": "from",
+						"type": "address"
+					},
+					{
+						"internalType": "address",
+						"name": "to",
+						"type": "address"
+					}
+				],
+				"name": "marketplaceTransferDiamond",
+				"outputs": [],
+				"stateMutability": "nonpayable",
 				"type": "function"
 			},
 			{
@@ -809,6 +808,24 @@
 					}
 				],
 				"name": "setApprovalForAll",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "marketplace",
+						"type": "address"
+					},
+					{
+						"internalType": "bool",
+						"name": "authorized",
+						"type": "bool"
+					}
+				],
+				"name": "setMarketplaceAuthorization",
 				"outputs": [],
 				"stateMutability": "nonpayable",
 				"type": "function"
@@ -1084,29 +1101,8 @@
 				"balanceOf(address)": {
 					"details": "See {IERC721-balanceOf}."
 				},
-				"certifyDiamond(uint256,string)": {
-					"details": "Certify a diamond (certifiers only)"
-				},
 				"getApproved(uint256)": {
 					"details": "See {IERC721-getApproved}."
-				},
-				"getDiamondBasicInfo(uint256)": {
-					"details": "Get basic diamond information"
-				},
-				"getDiamondCertInfo(uint256)": {
-					"details": "Get diamond certification information"
-				},
-				"getDiamondHistory(uint256)": {
-					"details": "Get diamond history"
-				},
-				"getDiamondOwnershipInfo(uint256)": {
-					"details": "Get diamond ownership information"
-				},
-				"getProcessedDiamonds(uint256)": {
-					"details": "Get processed diamonds from a raw diamond"
-				},
-				"hasRole(address,string)": {
-					"details": "Check if an address has a specific role"
 				},
 				"isApprovedForAll(address,address)": {
 					"details": "See {IERC721-isApprovedForAll}."
@@ -1119,12 +1115,6 @@
 				},
 				"ownerOf(uint256)": {
 					"details": "See {IERC721-ownerOf}."
-				},
-				"processDiamond(uint256,uint256,string)": {
-					"details": "Process a raw diamond into a cut/polished diamond (manufacturers only)"
-				},
-				"registerRawDiamond(string,uint256,uint256,string)": {
-					"details": "Register a new raw diamond (miners only)"
 				},
 				"renounceOwnership()": {
 					"details": "Leaves the contract without owner. It will not be possible to call `onlyOwner` functions. Can only be called by the current owner. NOTE: Renouncing ownership will leave the contract without an owner, thereby disabling any functionality that is only available to the owner."
@@ -1155,9 +1145,6 @@
 				},
 				"totalSupply()": {
 					"details": "See {IERC721Enumerable-totalSupply}."
-				},
-				"transferDiamond(uint256,address)": {
-					"details": "Unified transfer function for all transfer types"
 				},
 				"transferFrom(address,address,uint256)": {
 					"details": "See {IERC721-transferFrom}."
@@ -1335,19 +1322,19 @@
 			]
 		},
 		"contracts/EntityContract.sol": {
-			"keccak256": "0xac3a4577e71f2e212f1eeeaca39727b2388ceacbbb53031a6a4ee0635d02fa91",
+			"keccak256": "0x70d2b85ee6c2dfc4f0fc26373277d393e6f4165b2ba1ef7a2fab69131574cb03",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://9426fc978bac3caebd1ac3da6973441afd21b68f5488a2f54d9988e0fda28094",
-				"dweb:/ipfs/QmTNPMEWcz5r8wWNj7v3Dec22ZvUxwrpv41ro6j17ix85j"
+				"bzz-raw://0519bfbdb738e376c4984c3e86000c9bc63641942c7cf10f0a308c6855344ff5",
+				"dweb:/ipfs/QmecSCtjMAV8dJZV5wxZSczSwg5y9AcTnAANcVgq5nyn4w"
 			]
 		},
 		"contracts/ProvenanceContract.sol": {
-			"keccak256": "0x02ba39be0da896fc8f2ff7a780bd6891a009608804b908363e4926f0e5c3371f",
+			"keccak256": "0x718b8d00b1df230151435ef993f19b51bd5c1b8417ac8597c2a3e3de106c87f5",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://e751928461295ce92e85c6a498b44269dd394eeec9cee26fbae079608f6aaa00",
-				"dweb:/ipfs/Qmc26QfXKoi4HRMzma1EX6LdAvoo4cZNaUTAsdN54vSf6N"
+				"bzz-raw://136a1637a3d09d0b6663f02f6b3288b90e93da98d0404829a60e00b3ebc3de7b",
+				"dweb:/ipfs/Qmbu46w6jKQmdp86ZuE51rcB6n1s12FfzZEXo4e7Nq1wkX"
 			]
 		}
 	},
