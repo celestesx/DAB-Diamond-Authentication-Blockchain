@@ -187,14 +187,11 @@
       src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"
       type="application/javascript"
     ></script>
-    <script type="module">
-      // Import contract configuration from centralized file
-      import { getContractConfig } from './contracts.js';
-      
+    <script>
       window.onload = function () {
-        const marketplaceConfig = getContractConfig('MARKETPLACE_CONTRACT');
-        const marketplaceContractAddress = marketplaceConfig ? marketplaceConfig.address : "";
-        const marketplaceContractABI = marketplaceConfig ? marketplaceConfig.abi : [];
+        // --- Smart Contract Configuration ---
+        const marketplaceContractAddress = "";
+        const marketplaceContractABI = [];
 
         // --- Global Vars ---
         let provider;
@@ -756,9 +753,9 @@
             connectWallet(); // Reconnect and check network
           });
         }
-
+-
         disableButtons(true); // Disable buttons until wallet is connected
-      };
+      }; 
     </script>
   </body>
 </html>
