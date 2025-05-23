@@ -108,141 +108,20 @@
       src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"
       type="application/javascript"
     ></script>
-    <script>
+    <script type="module">
+      // Import contract configuration from centralized file
+      import { getContractConfig } from './contracts.js';
+      
       window.onload = function () {
-        // Ensures Ethers.js is loaded before this script runs
-        // --- Smart Contract Configuration ---
-        // !!! REPLACE WITH YOUR DEPLOYED EntityContract ADDRESS ON SEPOLIA !!!
-        const entityContractAddress =
-          "0x69cB786e5d8747A22b28051616aA58875baf7C8d";
-        const entityContractABI = [
-          // ABI generated based on your EntityContract.txt
-          {
-            anonymous: false,
-            inputs: [
-              {
-                indexed: true,
-                internalType: "address",
-                name: "entityAddress",
-                type: "address",
-              },
-              {
-                indexed: false,
-                internalType: "string",
-                name: "name",
-                type: "string",
-              },
-              {
-                indexed: false,
-                internalType: "string",
-                name: "role",
-                type: "string",
-              },
-              {
-                indexed: false,
-                internalType: "string",
-                name: "licenseNumber",
-                type: "string",
-              },
-            ],
-            name: "EntityRegistered",
-            type: "event",
-          },
-          {
-            anonymous: false,
-            inputs: [
-              {
-                indexed: false,
-                internalType: "string",
-                name: "name",
-                type: "string",
-              },
-              {
-                indexed: false,
-                internalType: "string",
-                name: "location",
-                type: "string",
-              },
-              {
-                indexed: false,
-                internalType: "string",
-                name: "reason",
-                type: "string",
-              },
-            ],
-            name: "RegistrationRejected",
-            type: "event",
-          },
-          {
-            inputs: [
-              { internalType: "string", name: "_name", type: "string" },
-              { internalType: "string", name: "_location", type: "string" },
-              { internalType: "string", name: "_role", type: "string" },
-              {
-                internalType: "string",
-                name: "_licenseNumber",
-                type: "string",
-              },
-            ],
-            name: "registerEntity",
-            outputs: [],
-            stateMutability: "nonpayable",
-            type: "function",
-          },
-          {
-            inputs: [
-              {
-                internalType: "address",
-                name: "_entityAddress",
-                type: "address",
-              },
-            ],
-            name: "getEntityInfo",
-            outputs: [
-              { internalType: "string", name: "name", type: "string" },
-              { internalType: "string", name: "location", type: "string" },
-              { internalType: "bool", name: "isRegistered", type: "bool" },
-              { internalType: "string", name: "licenseNumber", type: "string" },
-              { internalType: "string", name: "role", type: "string" },
-            ],
-            stateMutability: "view",
-            type: "function",
-          },
-          {
-            // Added getEntitiesByRole for completeness, though not used in this basic UI yet
-            inputs: [{ internalType: "string", name: "_role", type: "string" }],
-            name: "getEntitiesByRole",
-            outputs: [
-              { internalType: "address[]", name: "", type: "address[]" },
-            ],
-            stateMutability: "view",
-            type: "function",
-          },
-          {
-            // Added isValidTransfer for completeness
-            inputs: [
-              { internalType: "address", name: "_from", type: "address" },
-              { internalType: "address", name: "_to", type: "address" },
-            ],
-            name: "isValidTransfer",
-            outputs: [{ internalType: "bool", name: "", type: "bool" }],
-            stateMutability: "nonpayable", // This was public, implying nonpayable state change (emits event)
-            type: "function",
-          },
-          {
-            // Added validateTransfer for completeness
-            inputs: [
-              { internalType: "address", name: "_from", type: "address" },
-              { internalType: "address", name: "_to", type: "address" },
-            ],
-            name: "validateTransfer",
-            outputs: [{ internalType: "bool", name: "", type: "bool" }],
-            stateMutability: "view",
-            type: "function",
-          },
-          // Add other functions/events from your ABI if needed
-        ];
+        const entityConfig = getContractConfig('ENTITY_CONTRACT');
+        if (!entityConfig) {
+          console.error("Failed to load Entity contract configuration");
+          return;
+        }
 
+        const entityContractAddress = entityConfig.address;
+        const entityContractABI = entityConfig.abi;
+        
         // --- Global Variables ---
         let provider;
         let signer;
