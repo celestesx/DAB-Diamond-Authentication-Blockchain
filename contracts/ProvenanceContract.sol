@@ -6,6 +6,9 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 
+//ERC721 - https://docs.openzeppelin.com/contracts/3.x/erc721
+//we used ERC721 over ERC20 because for diamonds, each token is unique as diamonds are each unique
+//Each diamond has different properties as well.
 contract Provenance is ERC721Enumerable, Ownable {
     using Counters for Counters.Counter;
     
@@ -37,6 +40,7 @@ contract Provenance is ERC721Enumerable, Ownable {
     event HistoryRecordAdded(uint256 indexed diamondId, string record);
     event LogMessage(string message, address value);
     
+    //constructor
     constructor(address entityContractAddress) 
         ERC721("DiamondNFT", "DNFT")
         Ownable(msg.sender)
@@ -45,7 +49,7 @@ contract Provenance is ERC721Enumerable, Ownable {
     }
     
     // ====== External Functions ======
-    
+    //register raw diamond (miners only)   
     function registerRawDiamond(
         string calldata origin,
         uint256 extractionDate,
@@ -74,6 +78,7 @@ contract Provenance is ERC721Enumerable, Ownable {
         return diamondId;
     }
     
+    //process diamond used by manufacturer
     function processDiamond(
         uint256 rawDiamondId,
         uint256 weight,
@@ -106,6 +111,7 @@ contract Provenance is ERC721Enumerable, Ownable {
         return newDiamondId;
     }
     
+    //certify diamond used by certifier
     function certifyDiamond(uint256 diamondId, string calldata certificationId) external {
         require(_exists(diamondId), "Diamond does not exist");
         require(ownerOf(diamondId) == msg.sender, "You don't own this diamond");
@@ -124,6 +130,7 @@ contract Provenance is ERC721Enumerable, Ownable {
         _authorizedMarketplaces[marketplace] = authorized;
     }
 
+    //function called from marketplace to sell the diamond to consumer or between them
     function marketplaceTransferDiamond(uint256 diamondId, address from, address to) external {
         require(_authorizedMarketplaces[msg.sender], "Not an authorized marketplace");
         require(_exists(diamondId), "Diamond does not exist");
@@ -144,6 +151,7 @@ contract Provenance is ERC721Enumerable, Ownable {
         emit DiamondTransferred(diamondId, from, to, transferType);
     }
 
+    //function for transfer of diamonds within supply chain
     function transferDiamond(uint256 diamondId, address to) external {
         require(_exists(diamondId), "Diamond does not exist");
         require(ownerOf(diamondId) == msg.sender, "You don't own this diamond");
@@ -163,8 +171,8 @@ contract Provenance is ERC721Enumerable, Ownable {
         emit DiamondTransferred(diamondId, msg.sender, to, transferType);
     }
     
-    // ====== View Functions ======
-    
+    // ====== View Functions ====== 
+    //get diamond basic information
     function getDiamondBasicInfo(uint256 diamondId) external view returns (
         string memory origin, uint256 extractionDate, uint256 weight, string memory characteristics
     ) {
@@ -173,6 +181,7 @@ contract Provenance is ERC721Enumerable, Ownable {
         return (diamond.origin, diamond.extractionDate, diamond.weight, diamond.characteristics);
     }
     
+    //get diamond certification info
     function getDiamondCertInfo(uint256 diamondId) external view returns (
         bool isCertified, string memory certificationId, uint256 rawDiamondId
     ) {
@@ -181,18 +190,20 @@ contract Provenance is ERC721Enumerable, Ownable {
         return (diamond.isCertified, diamond.certificationID, diamond.rawDiamondID);
     }
     
+    //get diamond owner
     function getDiamondOwnershipInfo(uint256 diamondId) external view returns (address) {
         require(_exists(diamondId), "Diamond does not exist");
         return ownerOf(diamondId);
     }
     
+    //get complete diamond history
     function getDiamondHistory(uint256 diamondId) external view returns (string[] memory) {
         require(_exists(diamondId), "Diamond does not exist");
         return _diamondHistory[diamondId];
     }
         
     // ====== Internal Helper Functions ======
-    
+    //find the transfer type
     function _determineTransferType(
         uint256 diamondId, 
         bool senderRegistered, 
@@ -231,16 +242,19 @@ contract Provenance is ERC721Enumerable, Ownable {
         return (transferType, details);
     }
     
+    //function to find if user has role
     function _hasRole(address account, string memory role) internal view returns (bool) {
         (bool registered, string memory entityRole) = _getEntityInfo(account);
         return registered && keccak256(abi.encodePacked(entityRole)) == keccak256(abi.encodePacked(role));
     }
     
+    //function to get entity info
     function _getEntityInfo(address account) internal view returns (bool registered, string memory role) {
         (,, registered,, role) = _entityContract.getEntityInfo(account);
         return (registered, role);
     }
     
+    //function to add record to diamond history
     function _addHistoryRecord(
         uint256 diamondId, string memory action, address actor, string memory details
     ) internal {
@@ -253,6 +267,7 @@ contract Provenance is ERC721Enumerable, Ownable {
         emit HistoryRecordAdded(diamondId, record);
     }
     
+    //function to make an address a string
     function _addressToString(address addr) internal pure returns (string memory) {
         bytes32 value = bytes32(uint256(uint160(addr)));
         bytes memory alphabet = "0123456789abcdef";
@@ -269,6 +284,7 @@ contract Provenance is ERC721Enumerable, Ownable {
         return string(str);
     }
     
+    //function to make a uint256 into a string
     function _uint256ToString(uint256 value) internal pure returns (string memory) {
         if (value == 0) return "0";
         
@@ -291,6 +307,7 @@ contract Provenance is ERC721Enumerable, Ownable {
         return string(buffer);
     }
     
+    //check if function exists
     function _exists(uint256 tokenId) internal view returns (bool) {
         return tokenId > 0 && tokenId <= _tokenIds.current();
     }

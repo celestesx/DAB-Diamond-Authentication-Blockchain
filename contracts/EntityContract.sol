@@ -141,6 +141,7 @@ contract EntityContract {
         );
     } 
 
+    //function to make sure all variations of roles typed, capitalised or not are accepted
     function normaliseRole(string memory _role) private pure returns (string memory) {
         bytes32 roleHash = keccak256(abi.encodePacked(_toLowerCase(_role)));
         
@@ -157,6 +158,7 @@ contract EntityContract {
         }
     }
 
+    //function to lower case
     function _toLowerCase(string memory _str) private pure returns (string memory) {
         bytes memory bStr = bytes(_str);
         bytes memory bLower = new bytes(bStr.length);
@@ -172,6 +174,7 @@ contract EntityContract {
         return string(bLower);
     }
 
+    //function if role listed is valid
     function isValidRole(string memory _role) private pure returns (bool) {
         return keccak256(abi.encodePacked(_role)) == keccak256(abi.encodePacked(ROLE_MINER)) ||
                keccak256(abi.encodePacked(_role)) == keccak256(abi.encodePacked(ROLE_MANUFACTURER)) ||
@@ -179,6 +182,7 @@ contract EntityContract {
                keccak256(abi.encodePacked(_role)) == keccak256(abi.encodePacked(ROLE_RETAILER));
     }
 
+    //get the prefix from license number attributed to a role
     function getLicensePrefixForRole(string memory _role) private pure returns (bytes1) {
         bytes32 roleHash = keccak256(abi.encodePacked(_role));
         
@@ -194,5 +198,4 @@ contract EntityContract {
             revert("Invalid role");
         }
     }
-    
 }
