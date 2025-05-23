@@ -109,19 +109,18 @@
       type="application/javascript"
     ></script>
     <script type="module">
-      // Import contract configuration from centralized file
+      // Import contract config
       import { getContractConfig } from './contracts.js';
       
       window.onload = function () {
-        // Ensures Ethers.js is loaded before this script runs
-        // Get contract configuration from centralized file
+   
         const entityConfig = getContractConfig('ENTITY_CONTRACT');
         if (!entityConfig) {
           console.error("Failed to load Entity contract configuration");
           return;
         }
         
-        // Use the contract address and ABI from the configuration
+   
         const entityContractAddress = entityConfig.address;
         const entityContractABI = entityConfig.abi;
 
@@ -129,7 +128,7 @@
         let provider;
         let signer;
         let contract;
-        const sepoliaChainId = "0xaa36a7"; // Sepolia Chain ID in hex (11155111 in decimal)
+        const sepoliaChainId = "0xaa36a7"; // Sepolia Chain ID
 
         // --- DOM Elements ---
         const connectWalletBtn = document.getElementById("connectWalletBtn");
@@ -218,7 +217,7 @@
               return;
             }
 
-            // Instantiate the contract
+            // Instantiate 
             contract = new ethers.Contract(
               entityContractAddress,
               entityContractABI,
@@ -249,20 +248,12 @@
           clearStatus();
           if (!contract) {
             showStatus(
-              "Please connect your wallet first and ensure you are on Sepolia.",
+              "connect your wallet first and ensure you are on Sepolia.",
               true
             );
             return;
           }
-          if (
-            entityContractAddress === "YOUR_ENTITY_CONTRACT_ADDRESS_ON_SEPOLIA"
-          ) {
-            showStatus(
-              "Please replace 'YOUR_ENTITY_CONTRACT_ADDRESS_ON_SEPOLIA' in the script with your actual contract address.",
-              true
-            );
-            return;
-          }
+          
 
           const name = entityNameInput.value;
           const location = entityLocationInput.value;
@@ -323,15 +314,7 @@
             );
             return;
           }
-          if (
-            entityContractAddress === "YOUR_ENTITY_CONTRACT_ADDRESS_ON_SEPOLIA"
-          ) {
-            showStatus(
-              "Please replace 'YOUR_ENTITY_CONTRACT_ADDRESS_ON_SEPOLIA' in the script with your actual contract address.",
-              true
-            );
-            return;
-          }
+         
 
           const addressToQuery = infoEntityAddressInput.value;
           if (!ethers.utils.isAddress(addressToQuery)) {
@@ -391,8 +374,7 @@
               registerEntityBtn.disabled = true;
               getEntityInfoBtn.disabled = true;
             } else {
-              // Re-initialize or simply update the displayed address
-              // For simplicity, we'll ask to reconnect, but a more robust app might auto-reconnect.
+          
               connectWallet(); // Attempt to reconnect with the new account
             }
           });
@@ -401,7 +383,7 @@
             showStatus(
               `Network changed to Chain ID: ${chainId}. Please ensure it's Sepolia and reconnect if necessary.`
             );
-            // Reload or re-initialize to reflect new network state
+            // Reload 
             connectWallet(); // Attempt to reconnect and check network
           });
         }

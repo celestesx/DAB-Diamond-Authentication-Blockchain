@@ -131,7 +131,7 @@
 </section>
 
 
-      <!-- Status Output -->
+      <!-- Status  -->
       <div id="statusMessage" class="status-message hidden"></div>
 
     <script
@@ -139,7 +139,7 @@
       type="application/javascript"
     ></script>
     <script type="module">
-      // Import contract configuration from centralized file
+      // Import contract config
       import { getContractConfig } from './contracts.js';
       
       window.onload = function () {
@@ -159,18 +159,18 @@
         }
         console.log("LOG: Ethers.js library appears to be loaded.", ethers);
 
-        // Get the contract configurations from the centralized file
+        // Get the contract config
         const provenanceConfig = getContractConfig('PROVENANCE_CONTRACT');
         if (!provenanceConfig) {
           console.error("Failed to load Provenance contract configuration");
           return;
         }
         
-        // Use the contract address and ABI from the configuration
+        
         const provenanceContractAddress = provenanceConfig.address;
         const provenanceContractABI = provenanceConfig.abi;
 
-        // Get the Entity contract configuration
+        // Get the Entity contract config
         const entityConfig = getContractConfig('ENTITY_CONTRACT');
         if (!entityConfig) {
           console.error("Failed to load Entity contract configuration");
