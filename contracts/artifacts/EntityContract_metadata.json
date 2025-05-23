@@ -95,25 +95,6 @@
 			{
 				"inputs": [
 					{
-						"internalType": "string",
-						"name": "_role",
-						"type": "string"
-					}
-				],
-				"name": "getEntitiesByRole",
-				"outputs": [
-					{
-						"internalType": "address[]",
-						"name": "",
-						"type": "address[]"
-					}
-				],
-				"stateMutability": "view",
-				"type": "function"
-			},
-			{
-				"inputs": [
-					{
 						"internalType": "address",
 						"name": "_entityAddress",
 						"type": "address"
@@ -148,30 +129,6 @@
 					}
 				],
 				"stateMutability": "view",
-				"type": "function"
-			},
-			{
-				"inputs": [
-					{
-						"internalType": "address",
-						"name": "_from",
-						"type": "address"
-					},
-					{
-						"internalType": "address",
-						"name": "_to",
-						"type": "address"
-					}
-				],
-				"name": "isValidTransfer",
-				"outputs": [
-					{
-						"internalType": "bool",
-						"name": "",
-						"type": "bool"
-					}
-				],
-				"stateMutability": "nonpayable",
 				"type": "function"
 			},
 			{
@@ -255,11 +212,11 @@
 	},
 	"sources": {
 		"contracts/EntityContract.sol": {
-			"keccak256": "0xac3a4577e71f2e212f1eeeaca39727b2388ceacbbb53031a6a4ee0635d02fa91",
+			"keccak256": "0x70d2b85ee6c2dfc4f0fc26373277d393e6f4165b2ba1ef7a2fab69131574cb03",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://9426fc978bac3caebd1ac3da6973441afd21b68f5488a2f54d9988e0fda28094",
-				"dweb:/ipfs/QmTNPMEWcz5r8wWNj7v3Dec22ZvUxwrpv41ro6j17ix85j"
+				"bzz-raw://0519bfbdb738e376c4984c3e86000c9bc63641942c7cf10f0a308c6855344ff5",
+				"dweb:/ipfs/QmecSCtjMAV8dJZV5wxZSczSwg5y9AcTnAANcVgq5nyn4w"
 			]
 		}
 	},
