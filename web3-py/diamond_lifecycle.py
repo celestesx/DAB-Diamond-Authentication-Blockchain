@@ -200,7 +200,7 @@ def transfer_diamond(w3, contract, diamond_id, from_private_key, to_address):
 
 def process_diamond(w3, contract, raw_diamond_id, manufacturer_private_key):
     """Processes a raw diamond as the manufacturer."""
-    print("\n=== STEP 2: MANUFACTURER PROCESSING RAW DIAMOND ===")
+    print("\n=== STEP 3: MANUFACTURER PROCESSING RAW DIAMOND ===")
     manufacturer_address = get_account_address(w3, manufacturer_private_key)
     print(f"Manufacturer address: {manufacturer_address}")
     
@@ -251,7 +251,7 @@ def process_diamond(w3, contract, raw_diamond_id, manufacturer_private_key):
 
 def certify_diamond(w3, contract, diamond_id, certifier_private_key):
     """Certifies a diamond as the certifier."""
-    print("\n=== STEP 3: CERTIFIER CERTIFYING DIAMOND ===")
+    print("\n=== STEP 5: CERTIFIER CERTIFYING DIAMOND ===")
     certifier_address = get_account_address(w3, certifier_private_key)
     print(f"Certifier address: {certifier_address}")
     
@@ -337,7 +337,7 @@ def main():
         display_diamond_info(w3, contract, raw_diamond_id)
         
         # Step 2: Miner transfers diamond to manufacturer
-        print("\n=== STEP 1: MINER TRANSFERRING DIAMOND TO MANUFACTURER ===")
+        print("\n=== STEP 2: MINER TRANSFERRING DIAMOND TO MANUFACTURER ===")
         transfer_diamond(w3, contract, raw_diamond_id, MINER_PRIVATE_KEY, manufacturer_address)
         display_diamond_info(w3, contract, raw_diamond_id)
         
@@ -346,7 +346,7 @@ def main():
         display_diamond_info(w3, contract, processed_diamond_id)
         
         # Step 4: Manufacturer transfers processed diamond to certifier
-        print(f"\n=== STEP 3: MANUFACTURER TRANSFERRING PROCESSED DIAMOND TO CERTIFIER ===")
+        print(f"\n=== STEP 4: MANUFACTURER TRANSFERRING PROCESSED DIAMOND TO CERTIFIER ===")
         transfer_diamond(w3, contract, processed_diamond_id, MANUFACTURER_PRIVATE_KEY, certifier_address)
         display_diamond_info(w3, contract, processed_diamond_id)
         
