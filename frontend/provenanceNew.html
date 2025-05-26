@@ -356,20 +356,20 @@
               return;
             }
 
-            if (
-              provenanceContractAddress ===
-                "0x69cB786e5d8747A22b28051616aA58875baf7C8d" ||
-              entityContractAddress ===
-                "0x79b894aC8CB20FD53Fd5095a047F54f9E3450253"
-            ) {
-              showStatus(
-                "Contract address(es) not set in script. Please update.",
-                true
-              );
-              disableAllActionButtons(true);
-              accountRoleSpan.textContent = "Config Error";
-              return;
-            }
+            // if (
+            //   provenanceContractAddress ===
+            //     "0x69cB786e5d8747A22b28051616aA58875baf7C8d" ||
+            //   entityContractAddress ===
+            //     "0x79b894aC8CB20FD53Fd5095a047F54f9E3450253"
+            // ) {
+            //   showStatus(
+            //     "Contract address(es) not set in script. Please update.",
+            //     true
+            //   );
+            //   disableAllActionButtons(true);
+            //   accountRoleSpan.textContent = "Config Error";
+            //   return;
+            // }
             provenanceContractInstance = new ethers.Contract(
               provenanceContractAddress,
               provenanceContractABI,
