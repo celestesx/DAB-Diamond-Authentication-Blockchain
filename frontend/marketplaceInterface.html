@@ -14,8 +14,8 @@
       <nav>
         <ul>
           <li><a href="index.html">Home</a></li>
-          <li><a href="entityInterfaceNew.html">Register Entity</a></li>
-          <li><a href="provenanceNew.html">Diamond Provenance</a></li>
+          <li><a href="entityInterface.html">Register Entity</a></li>
+          <li><a href="provenance.html">Diamond Provenance</a></li>
           <li><a href="marketplaceInterface.html" class="active">Marketplace</a></li>
         </ul>
       </nav>
@@ -459,16 +459,6 @@
               );
               return;
             }
-          }
-          if (
-            marketplaceContractAddress ===
-            "YOUR_MARKETPLACE_CONTRACT_ADDRESS_ON_SEPOLIA"
-          ) {
-            showStatus(
-              "Please update the marketplaceContractAddress in the script.",
-              true
-            );
-            return;
           }
 
           const inputValue = inputElement ? inputElement.value : undefined;

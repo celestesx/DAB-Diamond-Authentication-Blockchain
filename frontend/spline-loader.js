@@ -25,13 +25,11 @@ class SplineLoader {
     }
   }
 
-  // Optional: Methods to interact with the scene
   getApp() {
     return this.app;
   }
 }
 
-// Auto-initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
   const splineLoader = new SplineLoader(
     'canvas3d',

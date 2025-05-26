@@ -19,6 +19,7 @@ SEPOLIA_CHAIN_ID = 11155111
 MINER_PRIVATE_KEY = os.getenv("MINER_PRIVATE_KEY")
 MANUFACTURER_PRIVATE_KEY = os.getenv("MANUFACTURER_PRIVATE_KEY")
 CERTIFIER_PRIVATE_KEY = os.getenv("CERTIFIER_PRIVATE_KEY")
+RETAILER_PRIVATE_KEY = os.getenv("RETAILER_PRIVATE_KEY")
 
 # Diamond randomization options
 ORIGINS = [
@@ -327,10 +328,12 @@ def main():
         miner_address = get_account_address(w3, MINER_PRIVATE_KEY)
         manufacturer_address = get_account_address(w3, MANUFACTURER_PRIVATE_KEY)
         certifier_address = get_account_address(w3, CERTIFIER_PRIVATE_KEY)
+        retailer_address = get_account_address(w3, RETAILER_PRIVATE_KEY)
         
         print(f"Miner Address: {miner_address}")
         print(f"Manufacturer Address: {manufacturer_address}")
         print(f"Certifier Address: {certifier_address}")
+        print(f"Retailer Address: {retailer_address}")
         
         # Step 1: Register a new raw diamond
         raw_diamond_id = register_raw_diamond(w3, contract, MINER_PRIVATE_KEY)
@@ -352,6 +355,11 @@ def main():
         
         # Step 5: Certifier certifies the diamond
         certify_diamond(w3, contract, processed_diamond_id, CERTIFIER_PRIVATE_KEY)
+        display_diamond_info(w3, contract, processed_diamond_id)
+        
+        # Step 6: Certifier transfers diamond to retailer
+        print(f"\n=== STEP 6: CERTIFIER TRANSFERRING DIAMOND TO RETAILER ===")
+        transfer_diamond(w3, contract, processed_diamond_id, CERTIFIER_PRIVATE_KEY, retailer_address)
         display_diamond_info(w3, contract, processed_diamond_id)
         
         print("\n=== DIAMOND LIFECYCLE COMPLETED SUCCESSFULLY ===")
